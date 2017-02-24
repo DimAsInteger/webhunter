@@ -9,10 +9,12 @@ public class Lines {
 	
 	private ArrayList<ArrayList<LinePoint>> ListOfLines;
 	private int lineCount = 0;
+	private ArrayList<LineInfo> EquationOfLines;
 	
 	public Lines(int size) {
 		ListOfLines = new ArrayList<ArrayList<LinePoint>>();
 		ListOfLines.ensureCapacity(size);
+		EquationOfLines = new ArrayList<LineInfo>(size);
 	}
 	
 	public void addPointToLine(int lineNum, LinePoint lp) {
@@ -67,6 +69,7 @@ public class Lines {
 	        double[] x = new double[MAXN];
 	        double[] y = new double[MAXN];
 	        double sumx = 0.0, sumy = 0.0, sumx2 = 0.0;
+	        int thickness = 0;
 			for (LinePoint point: line) {
 			
 		        // first pass: read in data, compute xbar and ybar
@@ -75,10 +78,12 @@ public class Lines {
 	            sumx  += x[n];
 	            sumx2 += x[n] * x[n];
 	            sumy  += y[n];
+	            thickness += point.getThickness();
 	            n++;
 	           
 	        }
-			IJ.showMessage("number of points "+n);
+			thickness = thickness/n;
+			IJ.log("number of points "+n);
 		    double xbar = sumx / n;
 		    double ybar = sumy / n;
 
@@ -108,12 +113,27 @@ public class Lines {
 		    double svar  = rss / df;
 		    double svar1 = svar / xxbar;
 		    double svar0 = svar/n + xbar*xbar*svar1;
-		    IJ.showMessage("y   = " + beta1 + " * x + " + beta0+"\n"+
+		    IJ.log("y   = " + beta1 + " * x + " + beta0+"\n"+
 		    			"R^2                 = " + R2+"\n"+
 		    			"std error of slope = " + Math.sqrt(svar1)+"\n"+
 		    			"std error of y-intercept = " + Math.sqrt(svar0));
-		  	
+		    LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
+			
+			if (EquationOfLines == null) {
+				EquationOfLines = new ArrayList<LineInfo>();
+			}
+			
+			EquationOfLines.add(tmp);
+			
 		}
+	}
+
+	public ArrayList<LineInfo> getEquationOfLines() {
+		return EquationOfLines;
+	}
+
+	public void setEquationOfLines(ArrayList<LineInfo> equationOfLines) {
+		EquationOfLines = equationOfLines;
 	}
 	
 

@@ -58,7 +58,7 @@ public class Detect_Features {
 	 */
 	public void process(ImagePlus image) {
 		// slice numbers start with 1 for historical reasons
-		IJ.showMessage("image.getStackSize() "+image.getStackSize());
+		IJ.log("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++)
 			process(image.getStack().getProcessor(i));
 	}
@@ -69,8 +69,10 @@ public class Detect_Features {
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
-		if (type == ImagePlus.GRAY8)
-			process( (byte[]) ip.getPixels() );
+		if (type == ImagePlus.GRAY8){
+			byte[] pixels = process( (byte[]) ip.getPixels() );
+			ip.setPixels(pixels);
+		}
 		else if (type == ImagePlus.GRAY16)
 			process( (short[]) ip.getPixels() );
 		else if (type == ImagePlus.GRAY32)
@@ -83,12 +85,12 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public void process(byte[] pixels) {
+	public byte[] process(byte[] pixels) {
 		
 		int state;  
 		int lineNum = 0;
 		
-		IJ.showMessage("start detect features");
+		IJ.showMessage("Start detect features");
 		// Use a state machine to detect the top endge and bottom edge
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
@@ -114,7 +116,7 @@ public class Detect_Features {
 							curRunWhite = 0;
 
 							if (x==0) {
-								IJ.showMessage("topedgefound top x= "+x+" y= "+y+
+								IJ.log("topedgefound top x= "+x+" y= "+y+
 										"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
 							}
 							
@@ -135,7 +137,7 @@ public class Detect_Features {
 								bottomY = y;
 							}
 						} catch (Exception e) {
-							IJ.showMessage("EXCEPTION found at y="+y+" x="+x+" thickness = "+(bottomY-topY));
+							IJ.log("EXCEPTION found at y="+y+" x="+x+" thickness = "+(bottomY-topY));
 										
 							e.printStackTrace();
 						}
@@ -145,13 +147,13 @@ public class Detect_Features {
 						int thickness = bottomY - topY + 2; // add six to account for top edge
 						
 						if (x==0) {
-							IJ.showMessage("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
+							IJ.log("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
 							+"x= "+x+" y= "+y+" thickness= "+thickness+
 							"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
 						}
 						// determine thickness based on scale -TODO
 						if (thickness >= 6) {
-							//IJ.showMessage("line found at y="+topY+" x="+x+" thickness = "+thickness);
+							//IJ.log("line found at y="+topY+" x="+x+" thickness = "+thickness);
 							LinePoint lp = new LinePoint(x, topY, thickness, false);
 							if (x==0) {
 								lines.addPointToLine(lineNum, lp);
@@ -161,7 +163,7 @@ public class Detect_Features {
 							}
 						}
 						if (thickness > 14) {
-							//IJ.showMessage("Possible circle");
+							//IJ.log("Possible circle");
 						}
 						curRunWhite = 0;
 						state = LOOK_FOR_TOP_EDGE;
@@ -174,6 +176,28 @@ public class Detect_Features {
 			
 		}
 		lines.CalculateLinearReqressions();
+		// draw the lines in white
+		for (LineInfo li : lines.getEquationOfLines()) {
+			IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
+			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
+			    for (int i=0; i<width; i++) {
+			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
+			    	y = -y;
+			    	if ((i>=5100) && (i<5102)) {
+			    		IJ.showMessage("x = "+i+" y = "+y);
+					    		
+			    	}
+			    	try {
+			    	   pixels[i + y * width] = (byte)255;				     
+			    	   
+			    	} catch (Exception e) {
+			    		//IJ.log(e.getMessage());
+			    		IJ.log(e.getMessage());
+			    	}
+			    }
+			}
+		}
+		return (pixels);
 	}
 
 	// processing of GRAY16 images
@@ -184,7 +208,7 @@ public class Detect_Features {
 				// example: add 'number' to each pixel
 				pixels[x + y * width] += (short)value;
 			}
-		}
+		} 
 	}
 
 	// processing of GRAY32 images
