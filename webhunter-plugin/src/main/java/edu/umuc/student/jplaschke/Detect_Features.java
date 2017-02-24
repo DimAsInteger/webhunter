@@ -11,8 +11,6 @@ package edu.umuc.student.jplaschke;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
-import ij.gui.GenericDialog;
-import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
 /**
@@ -94,6 +92,7 @@ public class Detect_Features {
 		// Use a state machine to detect the top endge and bottom edge
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
+		// NOTE: magic number 20 should match add point (distance to closest line
 		for (int x=0; x < width; x+=20) {
 			state = LOOK_FOR_TOP_EDGE;
 			int topY = -1;
@@ -183,12 +182,9 @@ public class Detect_Features {
 			    for (int i=0; i<width; i++) {
 			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
-			    	if ((i>=5100) && (i<5102)) {
-			    		IJ.showMessage("x = "+i+" y = "+y);
-					    		
-			    	}
+			    	
 			    	try {
-			    	   pixels[i + y * width] = (byte)255;				     
+			    	   pixels[i + y * width] = (byte)0;				     
 			    	   
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());

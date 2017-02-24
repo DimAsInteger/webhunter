@@ -44,19 +44,19 @@ public class Lines {
 		
 		// TODO - what if lines cross?
 		//        what if a new line starts from x>20,y=0
-		// NOTE: 20 is the slice thickness
+		// NOTE: 10 is the slice thickness
 		lp.y=-lp.y;
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
 				double dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
-				if (dist < minDistance) {
+				if ((dist < minDistance) && (dist > 10)) {
 					minDistance = dist;
 					lineNumToAddTo = line;
 				}
 			}
 		}
-		lineNumToAddTo.add(lp);
-		
+	    lineNumToAddTo.add(lp);
+	
  	}
 	
 		
@@ -64,7 +64,7 @@ public class Lines {
 	public void CalculateLinearReqressions() {
 		IJ.showMessage("Found "+lineCount+" lines.");
 		for (ArrayList<LinePoint> line : ListOfLines) {
-			int MAXN = 1000;
+			int MAXN = 3000;
 	        int n = 0;
 	        double[] x = new double[MAXN];
 	        double[] y = new double[MAXN];

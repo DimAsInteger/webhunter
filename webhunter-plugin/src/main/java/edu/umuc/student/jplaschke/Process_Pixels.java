@@ -42,7 +42,7 @@ public class Process_Pixels implements PlugInFilter {
 	
 	@Override
 	public int setup(String arg, ImagePlus imp) {
-		IJ.showMessage("setup before showAbout");
+		IJ.showStatus("Starting");
 		if (arg.equals("about")) {
 			showAbout();
 			return DONE;
@@ -63,7 +63,7 @@ public class Process_Pixels implements PlugInFilter {
 		height = ip.getHeight();
 
 		// Read scale information
-		IJ.showMessage("width = "+width+" height = "+height);
+		//IJ.showMessage("width = "+width+" height = "+height);
 		readScale.setImage(image);
 		readScale.process(ip);
 		image = readScale.getImage();
@@ -119,7 +119,6 @@ public class Process_Pixels implements PlugInFilter {
 	 */
 	public void process(ImagePlus image) {
 		// slice numbers start with 1 for historical reasons
-		IJ.showMessage("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++)
 			process(image.getStack().getProcessor(i));
 	}
@@ -150,7 +149,7 @@ public class Process_Pixels implements PlugInFilter {
 		int maxLength = -1;
 		int firstBlackLine = -1;
 		
-		IJ.showMessage("height = "+height+" width = "+width);
+		//IJ.showMessage("height = "+height+" width = "+width);
 		int longestRunWhite = 0; // longest run of white
 		for (int y=0; y < height; y++) {
 			blackTest = 0; // check for black line
@@ -162,7 +161,7 @@ public class Process_Pixels implements PlugInFilter {
 				blackTest += (int)pixels[x + y * width];
 			}
 			if ((blackTest == 0) && (firstBlackLine == -1)) {
-				IJ.showMessage("Found black line at y = "+y);
+				IJ.log("Found black line at y = "+y);
 				firstBlackLine = y;
 			}
 		}
@@ -198,7 +197,7 @@ public class Process_Pixels implements PlugInFilter {
 		
 		}
 		
-		IJ.showMessage("Final upperX = "+upperX+" upperY = "+upperY+" lowerX = "+lowerX+" lowerY = "+lowerY);
+		IJ.log("Final upperX = "+upperX+" upperY = "+upperY+" lowerX = "+lowerX+" lowerY = "+lowerY);
 		for (int y=upperY; y < lowerY; y++) {
 			for (int x=upperX; x < lowerX; x++) {
 				pixels[x + y * width] += (byte)value;		

@@ -107,7 +107,7 @@ public class Read_Scale {
 		int lowerY = -1;
 		int maxLength = -1;
 		
-		IJ.showMessage("height = "+height+" width = "+width);
+		//IJ.showMessage("height = "+height+" width = "+width);
 		int longestRunWhite = 0; // longest run of white
 		for (int y=0; y < height; y++) {
 			blackTest = 0; // check for black line
@@ -119,7 +119,7 @@ public class Read_Scale {
 				blackTest += (int)pixels[x + y * width];
 			}
 			if ((blackTest == 0) && (semHeight == -1)) {
-				IJ.showMessage("Found black line at y = "+y);
+				//IJ.showMessage("Found black line at y = "+y);
 				semHeight = y;
 			}
 		}
@@ -155,7 +155,7 @@ public class Read_Scale {
 		
 		}
 		
-		IJ.showMessage("Final upperX = "+upperX+" upperY = "+upperY+" lowerX = "+lowerX+" lowerY = "+lowerY);
+		//IJ.showMessage("Final upperX = "+upperX+" upperY = "+upperY+" lowerX = "+lowerX+" lowerY = "+lowerY);
 		for (int y=upperY; y < lowerY; y++) {
 			for (int x=upperX; x < lowerX; x++) {
 				pixels[x + y * width] -= (byte)60;		
