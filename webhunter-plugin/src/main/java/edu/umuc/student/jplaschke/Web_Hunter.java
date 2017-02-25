@@ -1,4 +1,5 @@
 /*
+
  * To the extent possible under law, the ImageJ developers have waived
  * all copyright and related or neighboring rights to this tutorial code.
  *
@@ -16,14 +17,24 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 import edu.umuc.student.jplaschke.Simple_Threshold;
 /**
- * A template for processing each pixel of either
- * GRAY8, GRAY16, GRAY32 or COLOR_RGB images.
+ * Web_Hunter is a Imagej plugin that detects line and circle orientation
+ * The algorithm is 
+ * 1) Detect the bottom of the micrograph and the scale 
+ * 2) Detect edges along the x=0 column
+ *    Note: May need histogram to determine constants for gradient 
+ *          Edge is detected by a change in the pixel value over 3 pixels
+ *          The delta for edge determination needs to be calculated from the 
+ *          histogram 
+ *     a) Add each point to the Lines data structure
+ * 3) Iterate down columns every x pixels (optimal x to be determined)
+ *    When ever an edge is detected add the Point to the closest line
+ * 4) Use linear regression on the points (edges) to detect all the lines
  *
- * @author Johannes Schindelin 
+ * @author  John Plaschke
  * 
- * Adapted by John Plaschke
+ * Adapted from Johannes Schindelin's example-legacy-plugin (imagej)
  */
-public class Process_Pixels implements PlugInFilter {
+public class Web_Hunter implements PlugInFilter {
 	protected ImagePlus image;
 
 	// image property members
@@ -84,6 +95,10 @@ public class Process_Pixels implements PlugInFilter {
 		
 	}
 
+	// William:  Create a dialog to have the user enter a typical line 
+	//      thickness and droplet diameter
+	//  If you cannot get the scale write a dialog to input magnification 
+	//  and scale value, e.g. 10um
 	private boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Process pixels");
 
@@ -146,15 +161,12 @@ public class Process_Pixels implements PlugInFilter {
 		int upperY = -1;
 		int lowerX = -1;
 		int lowerY = -1;
-		int maxLength = -1;
 		int firstBlackLine = -1;
 		
 		//IJ.showMessage("height = "+height+" width = "+width);
 		int longestRunWhite = 0; // longest run of white
 		for (int y=0; y < height; y++) {
 			blackTest = 0; // check for black line
-			int currentX = -1;
-			int curRunWhite = 0; // longest run of white
 			for (int x=0; x < width; x++) {
 				// process each pixel of the line
 				// example: add 'number' to each pixel
@@ -239,8 +251,8 @@ public class Process_Pixels implements PlugInFilter {
 	}
 
 	public void showAbout() {
-		IJ.showMessage("ProcessPixels",
-			"a template for processing each pixel of an image"
+		IJ.showMessage("WebHunter",
+			"a plugin for finding orientation of lines and circles of an image"
 		);
 	}
 
@@ -254,7 +266,7 @@ public class Process_Pixels implements PlugInFilter {
 	 */
 	public static void main(String[] args) {
 		// set the plugins.dir property to make the plugin appear in the Plugins menu
-		Class<?> clazz = Process_Pixels.class;
+		Class<?> clazz = Web_Hunter.class;
 		String url = clazz.getResource("/" + clazz.getName().replace('.', '/') + ".class").toString();
 		String pluginsDir = url.substring("file:".length(), url.length() - clazz.getName().length() - ".class".length());
 		System.setProperty("plugins.dir", pluginsDir);

@@ -4,7 +4,12 @@ import ij.IJ;
 
 import java.util.ArrayList;
 
-
+/**
+ * Data structure for lines
+ * 
+ * @author John Plaschke
+ * 
+ */
 public class Lines {
 	
 	private ArrayList<ArrayList<LinePoint>> ListOfLines;
@@ -17,6 +22,7 @@ public class Lines {
 		EquationOfLines = new ArrayList<LineInfo>(size);
 	}
 	
+	// Use this to add the first point (edges) on the x=0 axis
 	public void addPointToLine(int lineNum, LinePoint lp) {
 		// change y to negative 
 		// Cartesian plane starts at (0,0) and y is negative		

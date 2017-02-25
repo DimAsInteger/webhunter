@@ -16,11 +16,12 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
 /**
- * A template for processing each pixel of either
- * GRAY8, GRAY16, GRAY32 or COLOR_RGB images.
+ * Converts the image to black (pixel = 0) and white (pixel value = 255) based
+ * on a constant
+ * TODO: Change this to use a histogram to determine the background threshold
  *
- * @author Johannes Schindelin
- *  modified by John Plaschke
+ * @author John Plaschke
+ * 
  */
 public class Simple_Threshold  {
 	protected ImagePlus image;

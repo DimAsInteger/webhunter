@@ -108,7 +108,7 @@ public class Detect_Features {
 						prevTop = (int)pixels[x + (y-2) * width];
 						delta = (int)pixels[x + y * width] - prevTop;
 						// Need to determine 60 constant from scale
-						// TODO - need to detect brightness cutoff 100 is magic number
+						// TODO - need to detect brightness cutoff 50 is magic number
 						//        use histogram of some sort?
 						if ((delta >= 50) && ((int)pixels[x + y * width]>100)) {
 							topY = y; 
@@ -153,6 +153,7 @@ public class Detect_Features {
 						// determine thickness based on scale -TODO
 						if (thickness >= 6) {
 							//IJ.log("line found at y="+topY+" x="+x+" thickness = "+thickness);
+							// TODO change topY to middleY?
 							LinePoint lp = new LinePoint(x, topY, thickness, false);
 							if (x==0) {
 								lines.addPointToLine(lineNum, lp);

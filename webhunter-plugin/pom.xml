@@ -13,11 +13,11 @@
 	</parent>
 
 	<groupId>edu.umuc.student.jplaschke</groupId>
-	<artifactId>Process_Pixels</artifactId>
+	<artifactId>Web_Hunter</artifactId>
 	<url>http://www.dugway.army.mil</url>
 	<version>0.1.0</version>
 
-	<name>Process Pixels</name>
+	<name>Web Hunter</name>
 	<description>A Maven project implementing an ImageJ 1.x plugin.</description>
 	<inceptionYear>2017</inceptionYear>
 	<organization>
@@ -48,33 +48,13 @@
 	</developers>
 	<contributors>
 		<contributor>
-			<name>Johannes Schindelin</name>
-			<url>http://imagej.net/User:Schindelin</url>
-			<roles><role>founder</role></roles>
-			<properties><id>dscho</id></properties>
+		    <name>Christopher McFall</name>
 		</contributor>
 		<contributor>
-			<name>Olivier Burri</name>
-			<url>http://imagej.net/User:Oburri</url>
-			<properties><id>lacan</id></properties>
+		    <name>William Dew</name>
 		</contributor>
 		<contributor>
-			<name>Mark Hiner</name>
-			<url>http://imagej.net/User:Hinerm</url>
-			<properties><id>hinerm</id></properties>
-		</contributor>
-		<contributor>
-			<name>Jules Maselbas</name>
-		</contributor>
-		<contributor>
-			<name>Kota Miura</name>
-			<url>http://imagej.net/User:Miura</url>
-			<properties><id>cmci</id></properties>
-		</contributor>
-		<contributor>
-			<name>Yili Zhao</name>
-			<url>http://imagej.net/User:Panovr</url>
-			<properties><id>panovr</id></properties>
+		    <name>Delaram Nikooei</name>
 		</contributor>
 	</contributors>
 
@@ -86,14 +66,14 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/imagej/example-legacy-plugin</connection>
-		<developerConnection>scm:git:git@github.com:imagej/example-legacy-plugin</developerConnection>
+		<connection>scm:git:git://github.com/jplaschke/webhunter</connection>
+		<developerConnection>scm:git:git@github.com:jplaschke/webhunter</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/imagej/example-legacy-plugin</url>
+		<url>https://github.com/jplaschke/webhunter</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/imagej/example-legacy-plugin/issues</url>
+		<url>https://github.com/jplaschke/webhunter/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>None</system>
@@ -102,7 +82,7 @@
 	
 	<properties>
 		<package-name>edu.umuc.student.jplaschke</package-name>
-		<main-class>edu.umuc.student.jplaschke.Process_Pixels</main-class>
+		<main-class>edu.umuc.student.jplaschke.Web_Hunter</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>WebHunter</license.copyrightOwners>
 	</properties>

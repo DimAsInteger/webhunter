@@ -16,11 +16,12 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
 /**
- * A template for processing each pixel of either
- * GRAY8, GRAY16, GRAY32 or COLOR_RGB images.
- *
- * @author Johannes Schindelin
- *  adapted by John Plaschke
+ * Determines the bottom of a scanning electron microscope micrograph
+ * Determine the scale length in pixels 
+ * TODO: Determine the magnification and scale value, e.g. 10um
+ * 
+ * @author John Plaschke
+ *  
  */
 public class Read_Scale {
 	protected ImagePlus image;
