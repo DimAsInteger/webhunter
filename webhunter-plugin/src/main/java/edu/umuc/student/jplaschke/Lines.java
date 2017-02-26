@@ -35,6 +35,9 @@ public class Lines {
 		}
 		
 		ListOfLines.ensureCapacity(lineNum+1);
+		if (lp.x == 0) {
+			IJ.log("add first point x = "+lp.x+" y = "+lp.y);
+		}
 		ListOfLines.add(tmp);
 		if (lineNum > lineCount) {
 		   lineCount = lineNum;
@@ -52,14 +55,19 @@ public class Lines {
 		//        what if a new line starts from x>20,y=0
 		// NOTE: 10 is the slice thickness
 		lp.y=-lp.y;
+        LinePoint cp = null;  // for debug - closest point
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
 				double dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
 				if ((dist < minDistance) && (dist > 10)) {
 					minDistance = dist;
-					lineNumToAddTo = line;
+					lineNumToAddTo = line;  
+					cp = point;
 				}
 			}
+		}
+		if (lp.x <= 20) {
+			IJ.log("add closest point x = "+lp.x+" y = "+lp.y+"closest x "+cp.x+" cy "+cp.y);
 		}
 	    lineNumToAddTo.add(lp);
 	
@@ -128,8 +136,11 @@ public class Lines {
 			if (EquationOfLines == null) {
 				EquationOfLines = new ArrayList<LineInfo>();
 			}
-			
-			EquationOfLines.add(tmp);
+			// If standard error is less than 4 it is a line
+			// if it is greater than the line contains a circle??? maybe
+			if (Math.sqrt(svar0) < 5) {
+			    EquationOfLines.add(tmp);
+			}
 			
 		}
 	}

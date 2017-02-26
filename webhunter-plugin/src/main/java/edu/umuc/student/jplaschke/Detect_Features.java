@@ -8,6 +8,8 @@
 
 package edu.umuc.student.jplaschke;
 
+import java.util.ArrayList;
+
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
@@ -37,7 +39,7 @@ public class Detect_Features {
 	public String name;
 	
 	private Lines lines;
-	
+	private ArrayList<CircleInfo> circles;
 
 	/**
 	 * Process an image.
@@ -67,6 +69,7 @@ public class Detect_Features {
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
+		circles = new ArrayList<CircleInfo>(40);
 		if (type == ImagePlus.GRAY8){
 			byte[] pixels = process( (byte[]) ip.getPixels() );
 			ip.setPixels(pixels);
@@ -97,23 +100,31 @@ public class Detect_Features {
 			state = LOOK_FOR_TOP_EDGE;
 			int topY = -1;
 			int bottomY = -1;
-			int curRunWhite = 0; // longest run of white
+			int curRunWhite = 0; // longest run of white use to detect circle
+			                     // if curRunWhite is 5 or more ignore the slice
+			                     // mark as possible circle
+			int maxRunWhite = -1;
 			int prevTop = -1;
 			int delta = 0;
-			for (int y=2; y < height; y++) {
+			for (int y=4; y < height; y++) {
 				IJ.showProgress(x*y, width*height);
 				switch(state) {
 					case LOOK_FOR_TOP_EDGE:
 						// top edge starts with 255
-						prevTop = (int)pixels[x + (y-2) * width];
+						prevTop = (int)pixels[x + (y-4) * width];
 						delta = (int)pixels[x + y * width] - prevTop;
-						// Need to determine 60 constant from scale
-						// TODO - need to detect brightness cutoff 50 is magic number
+						// Need to determine thickness constant from scale
+						// TODO - need to detect brightness cutoff 60 is magic number
 						//        use histogram of some sort?
-						if ((delta >= 50) && ((int)pixels[x + y * width]>100)) {
-							topY = y; 
-							curRunWhite = 0;
-
+						if ((int)pixels[x + y * width] == 255) {
+							++curRunWhite;
+						}
+						if (curRunWhite > 4) {
+							continue;
+						}
+						if ((delta >= 60)) {
+							topY = y-4; 
+						
 							if (x==0) {
 								IJ.log("topedgefound top x= "+x+" y= "+y+
 										"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
@@ -127,11 +138,13 @@ public class Detect_Features {
 					break;
 				
 					case LOOK_FOR_BOTTOM_EDGE:
-						// bottom edge is found when 5 white pixels are found
+						// bottom edge is found  change in pixel value is found
 						try {
-							prevTop = (int)pixels[x + (y-2) * width];
+							prevTop = (int)pixels[x + (y-4) * width];
 							delta = prevTop - (int)pixels[x + y * width];
-							if (delta >= (byte)50) {
+						//	IJ.log("bottom delta "+delta);
+				
+							if (delta >= (byte)150) {
 								state = BOTTOM_EDGE_FOUND;
 								bottomY = y;
 							}
@@ -143,15 +156,17 @@ public class Detect_Features {
 					break;
 					
 					case BOTTOM_EDGE_FOUND:
-						int thickness = bottomY - topY + 2; // add six to account for top edge
+						int thickness = bottomY - topY + 8; // add six to account for top edge
 						
 						if (x==0) {
 							IJ.log("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
 							+"x= "+x+" y= "+y+" thickness= "+thickness+
 							"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
+							IJ.log("thickness "+thickness);
+							
 						}
 						// determine thickness based on scale -TODO
-						if (thickness >= 6) {
+						if ((thickness >= 12) && (thickness <= 40)) {
 							//IJ.log("line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
 							LinePoint lp = new LinePoint(x, topY, thickness, false);
@@ -162,8 +177,13 @@ public class Detect_Features {
 								lines.addPointToClosestLine(lp);
 							}
 						}
-						if (thickness > 14) {
+						// TODO fix magic numbers based on magnification
+						if (thickness > 40) {
 							//IJ.log("Possible circle");
+							int radius = (int) Math.round((double)thickness / 2.0);
+							boolean aggregate = (thickness > 110);
+							CircleInfo circle = new CircleInfo(x, topY, radius, aggregate);
+							circles.add(circle);
 						}
 						curRunWhite = 0;
 						state = LOOK_FOR_TOP_EDGE;
@@ -176,7 +196,7 @@ public class Detect_Features {
 			
 		}
 		lines.CalculateLinearReqressions();
-		// draw the lines in white
+		// draw the lines in black
 		for (LineInfo li : lines.getEquationOfLines()) {
 			IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
