@@ -119,7 +119,7 @@ public class Detect_Features {
 						if ((int)pixels[x + y * width] == 255) {
 							++curRunWhite;
 						}
-						if (curRunWhite > 4) {
+						if (curRunWhite > 10) {
 							continue;
 						}
 						if ((delta >= 60)) {

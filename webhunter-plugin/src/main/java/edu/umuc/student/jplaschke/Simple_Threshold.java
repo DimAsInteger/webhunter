@@ -110,7 +110,7 @@ public class Simple_Threshold  {
 			for (int x=0; x < width; x++) {
 				// process each pixel of the line
 				// example: add 'number' to each pixel
-				if (pixels[x + y * width] >= (byte)245) {
+				if (pixels[x + y * width] >= (byte)190) {
 				   pixels[x + y * width] = (byte)255;
 				} else {
 				   pixels[x + y * width] = (byte)0;

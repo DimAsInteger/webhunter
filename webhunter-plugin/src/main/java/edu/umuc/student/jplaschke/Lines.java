@@ -136,9 +136,9 @@ public class Lines {
 			if (EquationOfLines == null) {
 				EquationOfLines = new ArrayList<LineInfo>();
 			}
-			// If standard error is less than 4 it is a line
+			// If standard error is less than 4? it is a line
 			// if it is greater than the line contains a circle??? maybe
-			if (Math.sqrt(svar0) < 5) {
+			if (Math.sqrt(svar0) < 50) {
 			    EquationOfLines.add(tmp);
 			}
 			
