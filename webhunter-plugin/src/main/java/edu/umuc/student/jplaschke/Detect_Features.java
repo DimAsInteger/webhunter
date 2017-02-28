@@ -39,10 +39,9 @@ public class Detect_Features {
 	public String name;
 	
 	private Lines lines;
-	private ArrayList<CircleInfo> circles;
+	private Circles circles;
 
 	/**
-	 * Process an image.
 	 * <p>
 	 * Please provide this method even if {@link ij.plugin.filter.PlugInFilter} does require it;
 	 * the method {@link ij.plugin.filter.PlugInFilter#run(ij.process.ImageProcessor)} can only
@@ -69,7 +68,7 @@ public class Detect_Features {
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
-		circles = new ArrayList<CircleInfo>(40);
+		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
 			byte[] pixels = process( (byte[]) ip.getPixels() );
 			ip.setPixels(pixels);
@@ -171,14 +170,6 @@ public class Detect_Features {
 								lines.addPointToClosestLine(lp);
 							}
 						}
-						// TODO fix magic numbers based on magnification
-						if (thickness > 40) {
-							//IJ.log("Possible circle");
-							int radius = (int) Math.round((double)thickness / 2.0);
-							boolean aggregate = (thickness > 110);
-							CircleInfo circle = new CircleInfo(x, topY, radius, aggregate);
-							circles.add(circle);
-						}
 						curRunWhite = 0;
 						state = LOOK_FOR_TOP_EDGE;
 						topY = 0;
@@ -191,59 +182,12 @@ public class Detect_Features {
 		}
 		lines.CalculateLinearReqressions();
 		// draw the lines in black
-		for (LineInfo li : lines.getEquationOfLines()) {
-			IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
-			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
-			    for (int i=0; i<width; i++) {
-			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
-			    	y = -y;
-			    	
-			    	try {
-			    	   pixels[i + y * width] = (byte)0;				     
-			    	   pixels[i + (y+1) * width] = (byte)0;				     
-			    	   pixels[i + (y+2) * width] = (byte)0;				     
-				    	   
-			    	} catch (Exception e) {
-			    		//IJ.log(e.getMessage());
-			    		IJ.log(e.getMessage());
-			    	}
-			    }
-			}
-		}
+		pixels = this.drawLinesInBlack(pixels);
+		
+		// look for cirles
+		this.circles.findCircles(lines, pixels, width, height);
+		
 		return (pixels);
-	}
-
-	// processing of GRAY16 images
-	public void process(short[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (short)value;
-			}
-		} 
-	}
-
-	// processing of GRAY32 images
-	public void process(float[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (float)value;
-			}
-		}
-	}
-
-	// processing of COLOR_RGB images
-	public void process(int[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (int)value;
-			}
-		}
 	}
 
 	public void showAbout() {
@@ -292,5 +236,28 @@ public class Detect_Features {
 
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");
+	}
+	
+	private byte[] drawLinesInBlack(byte[] pixels) {
+		for (LineInfo li : lines.getEquationOfLines()) {
+			IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
+			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
+			    for (int i=0; i<width; i++) {
+			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
+			    	y = -y;
+			    	
+			    	try {
+			    	   pixels[i + y * width] = (byte)0;				     
+			    	   pixels[i + (y+1) * width] = (byte)0;				     
+			    	   pixels[i + (y+2) * width] = (byte)0;				     
+				    	   
+			    	} catch (Exception e) {
+			    		//IJ.log(e.getMessage());
+			    		IJ.log(e.getMessage());
+			    	}
+			    }
+			}
+		}
+		return pixels;
 	}
 }
