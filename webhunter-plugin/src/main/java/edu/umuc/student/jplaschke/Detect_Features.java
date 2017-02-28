@@ -74,12 +74,6 @@ public class Detect_Features {
 			byte[] pixels = process( (byte[]) ip.getPixels() );
 			ip.setPixels(pixels);
 		}
-		else if (type == ImagePlus.GRAY16)
-			process( (short[]) ip.getPixels() );
-		else if (type == ImagePlus.GRAY32)
-			process( (float[]) ip.getPixels() );
-		else if (type == ImagePlus.COLOR_RGB)
-			process( (int[]) ip.getPixels() );
 		else {
 			throw new RuntimeException("not supported");
 		}
@@ -206,7 +200,9 @@ public class Detect_Features {
 			    	
 			    	try {
 			    	   pixels[i + y * width] = (byte)0;				     
-			    	   
+			    	   pixels[i + (y+1) * width] = (byte)0;				     
+			    	   pixels[i + (y+2) * width] = (byte)0;				     
+				    	   
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());
 			    		IJ.log(e.getMessage());

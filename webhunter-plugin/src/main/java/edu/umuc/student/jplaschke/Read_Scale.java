@@ -88,12 +88,6 @@ public class Read_Scale {
 			byte[] pixels = process( (byte[]) ip.getPixels() );
 			ip.setPixels(pixels);
 		}
-		else if (type == ImagePlus.GRAY16)
-			process( (short[]) ip.getPixels() );
-		else if (type == ImagePlus.GRAY32)
-			process( (float[]) ip.getPixels() );
-		else if (type == ImagePlus.COLOR_RGB)
-			process( (int[]) ip.getPixels() );
 		else {
 			throw new RuntimeException("not supported");
 		}
@@ -122,6 +116,7 @@ public class Read_Scale {
 			if ((blackTest == 0) && (semHeight == -1)) {
 				//IJ.showMessage("Found black line at y = "+y);
 				semHeight = y;
+				break;
 			}
 		}
 		

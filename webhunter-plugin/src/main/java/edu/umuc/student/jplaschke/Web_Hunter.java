@@ -117,139 +117,6 @@ public class Web_Hunter implements PlugInFilter {
 		return true;
 	}
 
-	/**
-	 * Process an image.
-	 * <p>
-	 * Please provide this method even if {@link ij.plugin.filter.PlugInFilter} does require it;
-	 * the method {@link ij.plugin.filter.PlugInFilter#run(ij.process.ImageProcessor)} can only
-	 * handle 2-dimensional data.
-	 * </p>
-	 * <p>
-	 * If your plugin does not change the pixels in-place, make this method return the results and
-	 * change the {@link #setup(java.lang.String, ij.ImagePlus)} method to return also the
-	 * <i>DOES_NOTHING</i> flag.
-	 * </p>
-	 *
-	 * @param image the image (possible multi-dimensional)
-	 */
-	public void process(ImagePlus image) {
-		// slice numbers start with 1 for historical reasons
-		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i));
-	}
-
-	// Select processing method depending on image type
-	public void process(ImageProcessor ip) {
-		int type = image.getType();
-		if (type == ImagePlus.GRAY8)
-			process( (byte[]) ip.getPixels() );
-		else if (type == ImagePlus.GRAY16)
-			process( (short[]) ip.getPixels() );
-		else if (type == ImagePlus.GRAY32)
-			process( (float[]) ip.getPixels() );
-		else if (type == ImagePlus.COLOR_RGB)
-			process( (int[]) ip.getPixels() );
-		else {
-			throw new RuntimeException("not supported");
-		}
-	}
-
-	// processing of GRAY8 images
-	public void process(byte[] pixels) {
-		int blackTest = 0;
-		int upperX = -1;
-		int upperY = -1;
-		int lowerX = -1;
-		int lowerY = -1;
-		int firstBlackLine = -1;
-		
-		//IJ.showMessage("height = "+height+" width = "+width);
-		int longestRunWhite = 0; // longest run of white
-		for (int y=0; y < height; y++) {
-			blackTest = 0; // check for black line
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				blackTest += (int)pixels[x + y * width];
-			}
-			if ((blackTest == 0) && (firstBlackLine == -1)) {
-				IJ.log("Found black line at y = "+y);
-				firstBlackLine = y;
-			}
-		}
-		
-		// Look for biggest white rectangle
-		for (int y=firstBlackLine; y < height; y++) {
-			int currentX = -1;
-			int curRunWhite = 0; // longest run of white
-			for (int x=0; x < width; x++) {
-				// Look for white rectangle
-				if (pixels[x + y * width] == (byte)245) {
-					if (currentX == -1) {
-						currentX = x;
-					}
-					++curRunWhite;
-					IJ.showStatus("curRunWhite = "+curRunWhite);
-				} else {
-					if (curRunWhite > longestRunWhite) {
-						longestRunWhite = curRunWhite;
-						IJ.showStatus("longestRunWhite = "+longestRunWhite);
-						upperX = currentX;
-						upperY = y;
-					} else if (curRunWhite == longestRunWhite) {
-						if (longestRunWhite > 380) {
-							lowerX = x;
-							lowerY = y;
-						}
-					}
-					curRunWhite = -1;
-					currentX = -1;
-				}
-			}
-		
-		}
-		
-		IJ.log("Final upperX = "+upperX+" upperY = "+upperY+" lowerX = "+lowerX+" lowerY = "+lowerY);
-		for (int y=upperY; y < lowerY; y++) {
-			for (int x=upperX; x < lowerX; x++) {
-				pixels[x + y * width] += (byte)value;		
-			}
-		}
-	}
-
-	// processing of GRAY16 images
-	public void process(short[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (short)value;
-			}
-		}
-	}
-
-	// processing of GRAY32 images
-	public void process(float[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (float)value;
-			}
-		}
-	}
-
-	// processing of COLOR_RGB images
-	public void process(int[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (int)value;
-			}
-		}
-	}
-
 	public void showAbout() {
 		IJ.showMessage("WebHunter",
 			"a plugin for finding orientation of lines and circles of an image"
@@ -257,7 +124,7 @@ public class Web_Hunter implements PlugInFilter {
 	}
 
 	/**
-	 * Main method for debugging.
+	 * Main method for DEBUGGING ONLY. ****
 	 *
 	 * For debugging, it is convenient to have a method that starts ImageJ, loads
 	 * an image and calls the plugin, e.g. after setting breakpoints.

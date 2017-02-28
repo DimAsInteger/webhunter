@@ -88,21 +88,17 @@ public class Simple_Threshold  {
 		width = ip.getWidth();
 		
 		int type = image.getType();
-		if (type == ImagePlus.GRAY8)
-			process( (byte[]) ip.getPixels() );
-		else if (type == ImagePlus.GRAY16)
-			process( (short[]) ip.getPixels() );
-		else if (type == ImagePlus.GRAY32)
-			process( (float[]) ip.getPixels() );
-		else if (type == ImagePlus.COLOR_RGB)
-			process( (int[]) ip.getPixels() );
+		if (type == ImagePlus.GRAY8) {
+			byte[] pixels =  process( (byte[]) ip.getPixels() );
+			ip.setPixels(pixels);
+		}
 		else {
 			throw new RuntimeException("not supported");
 		}
 	}
 
 	// processing of GRAY8 images
-	public void process(byte[] pixels) {
+	public byte[] process(byte[] pixels) {
 		
 		IJ.showMessage("height = "+height+" width = "+width);
 		for (int y=0; y < height; y++) {
@@ -117,39 +113,7 @@ public class Simple_Threshold  {
 				}
 			}
 		}
-	}
-
-	// processing of GRAY16 images
-	public void process(short[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (short)value;
-			}
-		}
-	}
-
-	// processing of GRAY32 images
-	public void process(float[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (float)value;
-			}
-		}
-	}
-
-	// processing of COLOR_RGB images
-	public void process(int[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (int)value;
-			}
-		}
+		return pixels;
 	}
 
 	public void showAbout() {
