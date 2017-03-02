@@ -24,7 +24,7 @@ public class Circles {
 	// Use this to find circles
 	public void findCircles(Lines lines, byte[] pixels, int width, int height) {
 		for (LineInfo li : lines.getEquationOfLines()) {
-			IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
+			//IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
 			    for (int i=0; i<width; i++) {
 			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));

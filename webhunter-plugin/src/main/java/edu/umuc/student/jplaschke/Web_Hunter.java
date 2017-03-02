@@ -9,6 +9,10 @@
 
 package edu.umuc.student.jplaschke;
 
+import java.io.File;
+
+import com.asprise.ocr.Ocr;
+
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
@@ -69,10 +73,16 @@ public class Web_Hunter implements PlugInFilter {
 
 	@Override
 	public void run(ImageProcessor ip) {
+		Ocr.setUp(); // one time setup
+		Ocr ocr = new Ocr();
+		ocr.startEngine("eng", Ocr.SPEED_SLOW);
+		String dir = image.getOriginalFileInfo().directory;
+	    String name = image.getOriginalFileInfo().fileName;
+	    String fullFname = dir+File.separator+name;
 		// get width and height
 		width = ip.getWidth();
 		height = ip.getHeight();
-
+        int bottomHeight = height;
 		// Read scale information
 		//IJ.showMessage("width = "+width+" height = "+height);
 		readScale.setImage(image);
@@ -80,6 +90,12 @@ public class Web_Hunter implements PlugInFilter {
 		image = readScale.getImage();
 		// Basic thresholding 
 		height = readScale.getSemHeight();
+	    
+	    IJ.showMessage("fullname = "+fullFname);
+		String s = ocr.recognize(fullFname, -1, 0, height, width, bottomHeight, 
+				       Ocr.RECOGNIZE_TYPE_TEXT, Ocr.OUTPUT_FORMAT_PLAINTEXT,
+				       "PROP_IMG_PREPROCESS_TYPE=custom|PROP_IMG_PREPROCESS_CUSTOM_CMDS=invert()");
+        IJ.showMessage("ocr = "+s);
 		//simpleThreshold.setImage(image);
 		//simpleThreshold.setHeight(height);
 		//simpleThreshold.process(ip);

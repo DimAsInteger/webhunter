@@ -115,6 +115,7 @@ public class Detect_Features {
 						if (curRunWhite > 10) {
 							continue;
 						}
+						// TODO: make calculation of 60 
 						if ((delta >= 60)) {
 							topY = y-4; 
 						
@@ -240,7 +241,7 @@ public class Detect_Features {
 	
 	private byte[] drawLinesInBlack(byte[] pixels) {
 		for (LineInfo li : lines.getEquationOfLines()) {
-			IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
+			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
 			    for (int i=0; i<width; i++) {
 			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
