@@ -8,19 +8,15 @@
 
 package edu.umuc.student.jplaschke;
 
-import java.util.ArrayList;
-
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 
 /**
- * A template for processing each pixel of either
- * GRAY8, GRAY16, GRAY32 or COLOR_RGB images.
+ * Detects lines and circles in a micrograph
  *
- * @author Johannes Schindelin 
- * modified by John Plaschke
+ * @author John Plaschke
  */
 public class Detect_Features {
 	
@@ -99,7 +95,7 @@ public class Detect_Features {
 			int maxRunWhite = -1;
 			int prevTop = -1;
 			int delta = 0;
-			for (int y=4; y < height; y++) {
+			for (int y=4; y < height; y+=4) {
 				IJ.showProgress(x*y, width*height);
 				switch(state) {
 					case LOOK_FOR_TOP_EDGE:
@@ -150,8 +146,8 @@ public class Detect_Features {
 					break;
 					
 					case BOTTOM_EDGE_FOUND:
-						int thickness = bottomY - topY + 8; // add six to account for top edge
-						
+						int thickness = bottomY - topY; // add eight to account for top edge
+				//		int halfThickness = 
 						if (x==0) {
 							IJ.log("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
 							+"x= "+x+" y= "+y+" thickness= "+thickness+
@@ -160,7 +156,7 @@ public class Detect_Features {
 							
 						}
 						// determine thickness based on scale -TODO
-						if ((thickness >= 12) && (thickness <= 40)) {
+						if ((thickness >= 6) && (thickness <= 10)) {
 							//IJ.log("line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
 							LinePoint lp = new LinePoint(x, topY, thickness, false);
@@ -250,7 +246,7 @@ public class Detect_Features {
 			    	try {
 			    	   pixels[i + y * width] = (byte)0;				     
 			    	   pixels[i + (y+1) * width] = (byte)0;				     
-			    	   pixels[i + (y+2) * width] = (byte)0;				     
+			    	   pixels[i + (y-1) * width] = (byte)0;				     
 				    	   
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());

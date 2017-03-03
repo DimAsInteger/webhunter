@@ -73,9 +73,7 @@ public class Web_Hunter implements PlugInFilter {
 
 	@Override
 	public void run(ImageProcessor ip) {
-		Ocr.setUp(); // one time setup
-		Ocr ocr = new Ocr();
-		ocr.startEngine("eng", Ocr.SPEED_SLOW);
+	    SemInfo semInfo = new SemInfo();
 		String dir = image.getOriginalFileInfo().directory;
 	    String name = image.getOriginalFileInfo().fileName;
 	    String fullFname = dir+File.separator+name;
@@ -91,11 +89,8 @@ public class Web_Hunter implements PlugInFilter {
 		// Basic thresholding 
 		height = readScale.getSemHeight();
 	    
-	    IJ.showMessage("fullname = "+fullFname);
-		String s = ocr.recognize(fullFname, -1, 0, height, width, bottomHeight, 
-				       Ocr.RECOGNIZE_TYPE_TEXT, Ocr.OUTPUT_FORMAT_PLAINTEXT,
-				       "PROP_IMG_PREPROCESS_TYPE=custom|PROP_IMG_PREPROCESS_CUSTOM_CMDS=invert()");
-        IJ.showMessage("ocr = "+s);
+	    IJ.log("fullname = "+fullFname);
+	    semInfo.readSemInfo(fullFname, width, height, bottomHeight);
 		//simpleThreshold.setImage(image);
 		//simpleThreshold.setHeight(height);
 		//simpleThreshold.process(ip);

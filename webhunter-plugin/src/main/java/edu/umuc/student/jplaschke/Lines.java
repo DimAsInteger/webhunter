@@ -76,7 +76,7 @@ public class Lines {
 		
 	// Calculate linear regression for a line to get y=mx+b
 	public void CalculateLinearReqressions() {
-		IJ.showMessage("Found "+lineCount+" lines.");
+		//IJ.showMessage("Found "+lineCount+" lines.");
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			int MAXN = 3000;
 	        int n = 0;
@@ -138,7 +138,7 @@ public class Lines {
 			}
 			// If standard error is less than 4? it is a line
 			// if it is greater than the line contains a circle??? maybe
-			if (Math.sqrt(svar0) < 50) {
+			if (Math.sqrt(svar0) < 39) {
 			    EquationOfLines.add(tmp);
 			}
 			
