@@ -22,7 +22,8 @@ public class Detect_Features {
 	
 	private final int LOOK_FOR_TOP_EDGE = 0;
 	private final int LOOK_FOR_BOTTOM_EDGE = 1;
-	private final int BOTTOM_EDGE_FOUND = 2;
+	private final int SKIP = 2;
+	private final int BOTTOM_EDGE_FOUND = 3;
 	
 	protected ImagePlus image;
 
@@ -84,60 +85,70 @@ public class Detect_Features {
 		// Use a state machine to detect the top endge and bottom edge
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
-		// NOTE: magic number 20 should match add point (distance to closest line
-		for (int x=0; x < width; x+=20) {
+		// NOTE: magic number 10 should match add point (distance to closest line
+		for (int x=140; x < width; x+=7) {
 			state = LOOK_FOR_TOP_EDGE;
 			int topY = -1;
 			int bottomY = -1;
-			int curRunWhite = 0; // longest run of white use to detect circle
-			                     // if curRunWhite is 5 or more ignore the slice
+			int curRunBlack = 0; // longest run of black use to detect circle
+			                     // if curRunBlack is 20 or more ignore the slice
 			                     // mark as possible circle
-			int maxRunWhite = -1;
 			int prevTop = -1;
 			int delta = 0;
-			for (int y=4; y < height; y+=4) {
+			int firstWhite = -1;
+			
+			for (int y=0; y < height; y++) {
 				IJ.showProgress(x*y, width*height);
 				switch(state) {
+				    case SKIP:
+				       curRunBlack = 0;
+					break;
+					
 					case LOOK_FOR_TOP_EDGE:
 						// top edge starts with 255
-						prevTop = (int)pixels[x + (y-4) * width];
+						//prevTop = (int)pixels[x + (y-4) * width];
+						curRunBlack = 0;
 						delta = (int)pixels[x + y * width] - prevTop;
 						// Need to determine thickness constant from scale
 						// TODO - need to detect brightness cutoff 60 is magic number
 						//        use histogram of some sort?
-						if ((int)pixels[x + y * width] == 255) {
-							++curRunWhite;
-						}
-						if (curRunWhite > 10) {
-							continue;
-						}
+		//				if ((int)pixels[x + y * width] == 255) {
+		//					++curRunWhite;
+		//				}
+			//			if (curRunWhite > 10) {
+			//				continue;
+			//			}
 						// TODO: make calculation of 60 
-						if ((delta >= 60)) {
-							topY = y-4; 
+						if (((pixels[x + y * width])&0xFF) == (int)10) {
+							topY = y-1; 
 						
-							if (x==0) {
+							if (x<=20) {
 								IJ.log("topedgefound top x= "+x+" y= "+y+
 										"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
 							}
 							
 							state = LOOK_FOR_BOTTOM_EDGE;
 							prevTop = -1;
-							
+							firstWhite = -1;
 						}
 					
 					break;
 				
+					
 					case LOOK_FOR_BOTTOM_EDGE:
 						// bottom edge is found  change in pixel value is found
 						try {
-							prevTop = (int)pixels[x + (y-4) * width];
+							//prevTop = (int)pixels[x + (y-4) * width];
 							delta = prevTop - (int)pixels[x + y * width];
 						//	IJ.log("bottom delta "+delta);
-				
-							if (delta >= (byte)150) {
+							if (((pixels[x + y * width])&0xFF) == (int)10) {
+								++curRunBlack;
+							} else if ((int)(pixels[x + y * width]&0xFF) == (int)80) {
+								bottomY = y+1;
+								firstWhite = y;
 								state = BOTTOM_EDGE_FOUND;
-								bottomY = y;
 							}
+							
 						} catch (Exception e) {
 							IJ.log("EXCEPTION found at y="+y+" x="+x+" thickness = "+(bottomY-topY));
 										
@@ -148,7 +159,7 @@ public class Detect_Features {
 					case BOTTOM_EDGE_FOUND:
 						int thickness = bottomY - topY; // add eight to account for top edge
 				//		int halfThickness = 
-						if (x==0) {
+						if (x<500) {
 							IJ.log("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
 							+"x= "+x+" y= "+y+" thickness= "+thickness+
 							"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
@@ -156,18 +167,18 @@ public class Detect_Features {
 							
 						}
 						// determine thickness based on scale -TODO
-						if ((thickness >= 6) && (thickness <= 10)) {
-							//IJ.log("line found at y="+topY+" x="+x+" thickness = "+thickness);
+						if ((thickness >= 4) && (thickness <= 17)) {
+							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
 							LinePoint lp = new LinePoint(x, topY, thickness, false);
-							if (x==0) {
+							if (x==140) {
 								lines.addPointToLine(lineNum, lp);
 								++lineNum;
 							} else {
 								lines.addPointToClosestLine(lp);
 							}
-						}
-						curRunWhite = 0;
+						} 
+						curRunBlack = 0;
 						state = LOOK_FOR_TOP_EDGE;
 						topY = 0;
 						bottomY = 0;
@@ -178,8 +189,8 @@ public class Detect_Features {
 			
 		}
 		lines.CalculateLinearReqressions();
-		// draw the lines in black
-		pixels = this.drawLinesInBlack(pixels);
+		// draw the lines in white
+		pixels = this.drawLinesInWhite(pixels);
 		
 		// look for cirles
 		this.circles.findCircles(lines, pixels, width, height);
@@ -208,6 +219,30 @@ public class Detect_Features {
 	public void setHeight(int height) {
 		this.height = height;
 	}
+	
+	private byte[] drawLinesInWhite(byte[] pixels) {
+		for (LineInfo li : lines.getEquationOfLines()) {
+			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
+			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
+			    for (int i=0; i<width; i++) {
+			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
+			    	y = -y;
+			    	
+			    	try {
+			    	   pixels[i + y * width] = (byte)255;				     
+			    	   pixels[i + (y+1) * width] = (byte)255;				     
+			    	   pixels[i + (y-1) * width] = (byte)255;				     
+				    	   
+			    	} catch (Exception e) {
+			    		//IJ.log(e.getMessage());
+			    		IJ.log(e.getMessage());
+			    	}
+			    }
+			}
+		}
+		return pixels;
+	}
+	
 
 	/**
 	 * Main method for debugging.
@@ -234,27 +269,5 @@ public class Detect_Features {
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");
 	}
-	
-	private byte[] drawLinesInBlack(byte[] pixels) {
-		for (LineInfo li : lines.getEquationOfLines()) {
-			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
-			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
-			    for (int i=0; i<width; i++) {
-			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
-			    	y = -y;
-			    	
-			    	try {
-			    	   pixels[i + y * width] = (byte)0;				     
-			    	   pixels[i + (y+1) * width] = (byte)0;				     
-			    	   pixels[i + (y-1) * width] = (byte)0;				     
-				    	   
-			    	} catch (Exception e) {
-			    		//IJ.log(e.getMessage());
-			    		IJ.log(e.getMessage());
-			    	}
-			    }
-			}
-		}
-		return pixels;
-	}
+
 }

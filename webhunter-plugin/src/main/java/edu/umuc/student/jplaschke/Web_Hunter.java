@@ -91,10 +91,10 @@ public class Web_Hunter implements PlugInFilter {
 	    
 	    IJ.log("fullname = "+fullFname);
 	    semInfo.readSemInfo(fullFname, width, height, bottomHeight);
-		//simpleThreshold.setImage(image);
-		//simpleThreshold.setHeight(height);
-		//simpleThreshold.process(ip);
-		
+		simpleThreshold.setImage(image);  
+		simpleThreshold.setHeight(height);
+		ip = simpleThreshold.process(ip);
+	  
 		// Feature detection
 		detectFeatures.setImage(image);
 		detectFeatures.setHeight(height);
@@ -106,8 +106,9 @@ public class Web_Hunter implements PlugInFilter {
 		
 	}
 
-	// William:  Create a dialog to have the user enter a typical line 
+	// Delaram:  Create a dialog to have the user enter a typical line 
 	//      thickness and droplet diameter
+	//      Add the tarantula name or ID of the spider
 	//  If you cannot get the scale write a dialog to input magnification 
 	//  and scale value, e.g. 10um
 	private boolean showDialog() {
@@ -115,7 +116,7 @@ public class Web_Hunter implements PlugInFilter {
 
 		// default value is 0.00, 2 digits right of the decimal point
 		gd.addNumericField("value", 0.00, 2);
-		gd.addStringField("name", "John");
+		gd.addStringField("name", "test");
 
 		gd.showDialog();
 		if (gd.wasCanceled())

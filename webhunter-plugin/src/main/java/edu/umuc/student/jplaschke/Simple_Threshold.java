@@ -12,7 +12,6 @@ import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
-import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
 /**
@@ -76,15 +75,19 @@ public class Simple_Threshold  {
 	 *
 	 * @param image the image (possible multi-dimensional)
 	 */
-	public void process(ImagePlus image) {
+	public ImagePlus process(ImagePlus image) {
 		// slice numbers start with 1 for historical reasons
 		IJ.showMessage("image.getStackSize() "+image.getStackSize());
-		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i));
+		for (int i = 1; i <= image.getStackSize(); i++) {
+			ImageProcessor ip = process(image.getStack().getProcessor(i));
+			image.getStack().setProcessor(ip, i);
+		}
+		
+		return image;
 	}
 
 	// Select processing method depending on image type
-	public void process(ImageProcessor ip) {
+	public ImageProcessor process(ImageProcessor ip) {
 		width = ip.getWidth();
 		
 		int type = image.getType();
@@ -95,21 +98,22 @@ public class Simple_Threshold  {
 		else {
 			throw new RuntimeException("not supported");
 		}
+		return ip;
 	}
 
 	// processing of GRAY8 images
 	public byte[] process(byte[] pixels) {
 		
 		IJ.showMessage("height = "+height+" width = "+width);
-		for (int y=0; y < height; y++) {
+		for (int x=0; x < width; x++) {
 			
-			for (int x=0; x < width; x++) {
+			for (int y=0;y < height; y++) {
 				// process each pixel of the line
-				// example: add 'number' to each pixel
-				if (pixels[x + y * width] >= (byte)190) {
-				   pixels[x + y * width] = (byte)255;
-				} else {
-				   pixels[x + y * width] = (byte)0;
+				// Set pixel to 255 if the value is greater than 149
+				if ((int)(pixels[x + y * width]&0xFF) > 149) {
+					pixels[x + y * width] = (byte)10;
+			    } else {
+				   pixels[x + y * width] = (byte)80;
 				}
 			}
 		}

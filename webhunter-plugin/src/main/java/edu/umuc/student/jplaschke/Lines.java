@@ -40,7 +40,7 @@ public class Lines {
 		}
 		ListOfLines.add(tmp);
 		if (lineNum > lineCount) {
-		   lineCount = lineNum;
+		   lineCount = lineNum+1;
 		}
  	} 
 	
@@ -56,29 +56,34 @@ public class Lines {
 		// NOTE: 10 is the slice thickness
 		lp.y=-lp.y;
         LinePoint cp = null;  // for debug - closest point
+        double dist = 100;
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
-				double dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
-				if ((dist < minDistance) && (dist > 10)) {
-					minDistance = dist;
-					lineNumToAddTo = line;  
-					cp = point;
-				}
+				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
+				if ((dist < minDistance) && (dist < 40)) {
+						minDistance = dist;
+						lineNumToAddTo = line;  
+						cp = point;
+				} 
+				
 			}
 		}
-		if (lp.x <= 20) {
-			IJ.log("add closest point x = "+lp.x+" y = "+lp.y+"closest x "+cp.x+" cy "+cp.y);
+	
+		if (lineNumToAddTo != null) {
+	        lineNumToAddTo.add(lp);
+		} else {
+			if (dist<100) IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
 		}
-	    lineNumToAddTo.add(lp);
 	
  	}
 	
 		
 	// Calculate linear regression for a line to get y=mx+b
 	public void CalculateLinearReqressions() {
-		//IJ.showMessage("Found "+lineCount+" lines.");
+		IJ.showMessage("Num Lines in list "+ListOfLines.size());
+		int lineNum = 1;
 		for (ArrayList<LinePoint> line : ListOfLines) {
-			int MAXN = 3000;
+			int MAXN = line.size()+1;
 	        int n = 0;
 	        double[] x = new double[MAXN];
 	        double[] y = new double[MAXN];
@@ -96,6 +101,7 @@ public class Lines {
 	            n++;
 	           
 	        }
+			// Average thickness
 			thickness = thickness/n;
 			IJ.log("number of points "+n);
 		    double xbar = sumx / n;
@@ -127,19 +133,22 @@ public class Lines {
 		    double svar  = rss / df;
 		    double svar1 = svar / xxbar;
 		    double svar0 = svar/n + xbar*xbar*svar1;
-		    IJ.log("y   = " + beta1 + " * x + " + beta0+"\n"+
+		    IJ.log("line num"+lineNum+" y   = " + beta1 + " * x + " + beta0+"\n"+
 		    			"R^2                 = " + R2+"\n"+
 		    			"std error of slope = " + Math.sqrt(svar1)+"\n"+
 		    			"std error of y-intercept = " + Math.sqrt(svar0));
 		    LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
-			
+			++lineNum;
 			if (EquationOfLines == null) {
 				EquationOfLines = new ArrayList<LineInfo>();
 			}
 			// If standard error is less than 4? it is a line
 			// if it is greater than the line contains a circle??? maybe
-			if (Math.sqrt(svar0) < 39) {
+			if (Math.sqrt(svar0) < 30) {
 			    EquationOfLines.add(tmp);
+			}
+			if (Double.isNaN(svar0)) {
+				 EquationOfLines.add(tmp);		
 			}
 			
 		}
