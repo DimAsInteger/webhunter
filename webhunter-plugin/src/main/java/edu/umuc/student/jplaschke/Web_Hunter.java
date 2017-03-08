@@ -14,13 +14,10 @@ import java.io.File;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
-import ij.plugin.filter.PlugInFilter;
-import ij.process.ImageProcessor;
-import edu.umuc.student.jplaschke.Simple_Threshold;
+
 /**
  * Web_Hunter is a Imagej plugin that detects line and circle orientation
  * The algorithm is 
@@ -93,7 +90,9 @@ public class Web_Hunter implements PlugIn {
 		readScale.setImage(image);
 		IJ.showStatus("Read Scale");
 		readScale.process(image);
-
+		// set the scale length
+		semInfo.setBarLength(readScale.getScaleWidth());
+		
 		image = readScale.getImage();
 		// Basic thresholding 
 		height = readScale.getSemHeight();
@@ -109,7 +108,7 @@ public class Web_Hunter implements PlugIn {
 		// Feature detection
 		detectFeatures.setImage(image);
 		detectFeatures.setHeight(height);
-		detectFeatures.process(image);
+		detectFeatures.process(image, semInfo);
 		
 		// Display results
 		//process(ip);

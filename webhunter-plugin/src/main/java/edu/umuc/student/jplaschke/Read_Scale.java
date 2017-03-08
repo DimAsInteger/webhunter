@@ -30,15 +30,8 @@ public class Read_Scale {
 	private int width;
 	private int height;
 	private int semHeight =1;  // height minus metadata
-
-	public int getSemHeight() {
-		return semHeight;
-	}
-
-	public void setSemHeight(int semHeight) {
-		this.semHeight = semHeight;
-	}
-
+    private int scaleWidth;
+    
 	// plugin parameters
 	public double value;
 	public String name;
@@ -47,7 +40,25 @@ public class Read_Scale {
 		semHeight = -1;
 	}
 
+
+	public int getSemHeight() {
+		return semHeight;
+	}
+
+	public void setSemHeight(int semHeight) {
+		this.semHeight = semHeight;
+	}
 	
+	public int getScaleWidth() {
+		return scaleWidth;
+	}
+
+
+	public void setScaleWidth(int scaleWidth) {
+		this.scaleWidth = scaleWidth;
+	}
+
+
 	public ImagePlus getImage() {
 		return image;
 	}
@@ -56,7 +67,7 @@ public class Read_Scale {
 		this.image = image;
 	}
 
-
+    
 	/**
 	 * Process an image.
 	 * <p>
@@ -100,14 +111,11 @@ public class Read_Scale {
 		int upperY = -1;
 		int lowerX = -1;
 		int lowerY = -1;
-		int maxLength = -1;
 		
 		//IJ.showMessage("height = "+height+" width = "+width);
 		int longestRunWhite = 0; // longest run of white
 		for (int y=0; y < height; y++) {
 			blackTest = 0; // check for black line
-			int currentX = -1;
-			int curRunWhite = 0; // longest run of white
 			for (int x=0; x < width; x++) {
 				// process each pixel of the line
 				// example: add 'number' to each pixel
@@ -157,40 +165,8 @@ public class Read_Scale {
 				pixels[x + y * width] -= (byte)60;		
 			}
 		}
+		setScaleWidth(lowerX - upperX);
 		return pixels;
-	}
-
-	// processing of GRAY16 images
-	public void process(short[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (short)value;
-			}
-		}
-	}
-
-	// processing of GRAY32 images
-	public void process(float[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (float)value;
-			}
-		}
-	}
-
-	// processing of COLOR_RGB images
-	public void process(int[] pixels) {
-		for (int y=0; y < height; y++) {
-			for (int x=0; x < width; x++) {
-				// process each pixel of the line
-				// example: add 'number' to each pixel
-				pixels[x + y * width] += (int)value;
-			}
-		}
 	}
 
 	public void showAbout() {

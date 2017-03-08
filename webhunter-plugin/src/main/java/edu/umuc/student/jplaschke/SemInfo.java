@@ -46,10 +46,12 @@ public class SemInfo {
 
 	}
 	
-	public double getNanoMeterLength(int lenPixels) {
-	    double len = 0;
-	    
-	    return len;
+	public double pixelLengthinMicrons() {
+		return  (double)this.scale / (double)this.barLength;
+	}
+	
+	public double getMicronLength(int lenPixels) {
+	    return pixelLengthinMicrons()*(double)lenPixels;
 	}
 	
 	public int getScale() {
@@ -73,6 +75,7 @@ public class SemInfo {
 	}
 
 	public void setBarLength(int barLength) {
+		IJ.log("scale length "+barLength);
 		this.barLength = barLength;
 	}
 

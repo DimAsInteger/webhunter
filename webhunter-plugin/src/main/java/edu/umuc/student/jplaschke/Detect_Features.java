@@ -10,12 +10,13 @@ package edu.umuc.student.jplaschke;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.Overlay;
-import ij.gui.Roi;
 import ij.gui.TextRoi;
 import ij.process.ImageProcessor;
 
@@ -43,6 +44,8 @@ public class Detect_Features {
 	
 	private Lines lines;
 	private Circles circles;
+	
+	private SemInfo semInfo;
 
 	/**
 	 * <p>
@@ -58,7 +61,8 @@ public class Detect_Features {
 	 *
 	 * @param image the image (possible multi-dimensional)
 	 */
-	public void process(ImagePlus image) {
+	public void process(ImagePlus image, SemInfo semInfo) {
+		this.semInfo = semInfo;
 		// slice numbers start with 1 for historical reasons
 		IJ.log("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++)
@@ -256,7 +260,9 @@ public class Detect_Features {
 
 				int y = (int) (Math.round((double)100*li.slope) + Math.round(li.yIntercept));
 			    y = -y;
-			    String text = "Line "+LineNum+" thickness = "+li.getThickness();
+			    NumberFormat formatter = new DecimalFormat("#0.000");     
+			    String text = "Line "+LineNum+" thickness = "
+			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" nm";
 				Font font = new Font("SansSerif", Font.PLAIN, 96);
 				if (roi != null) {
 					if (roi.getYBase() - y < 96) {
