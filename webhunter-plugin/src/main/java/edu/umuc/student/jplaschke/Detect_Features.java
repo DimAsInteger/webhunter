@@ -15,6 +15,7 @@ import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.Overlay;
+import ij.gui.Roi;
 import ij.gui.TextRoi;
 import ij.process.ImageProcessor;
 
@@ -245,19 +246,31 @@ public class Detect_Features {
 	
 	private byte[] drawLinesInWhite(byte[] pixels) {
 		int LineNum = 1;
-	    Overlay overlay = new Overlay();	
-		for (LineInfo li : lines.getEquationOfLines()) {
+	    Overlay overlay = new Overlay();
+	    TextRoi roi = null;
+	    int separateY = 0;
+	    for (LineInfo li : lines.getEquationOfLines()) {
 		        
 			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
 
 				int y = (int) (Math.round((double)100*li.slope) + Math.round(li.yIntercept));
 			    y = -y;
-				Font font = new Font("SansSerif", Font.PLAIN, 9); 
-			    TextRoi roi = new TextRoi(100, y, "Line "+LineNum+" thickness = "+li.getThickness(), font); 
-			    overlay.add(roi);
-			    roi.setStrokeColor(Color.WHITE);
-			    
+			    String text = "Line "+LineNum+" thickness = "+li.getThickness();
+				Font font = new Font("SansSerif", Font.PLAIN, 96);
+				if (roi != null) {
+					if (roi.getYBase() - y < 96) {
+						separateY = 100;
+					} else {
+						separateY = 20;
+					}
+				}
+			    roi = new TextRoi(100, y-separateY, text, font); 
+			    roi.setStrokeColor(Color.white); 
+				roi.setNonScalable(true); 
+				
+				image.setOverlay(overlay);
+				overlay.add(roi);
 				for (int i=0; i<width; i++) {
 			    	y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
@@ -273,7 +286,10 @@ public class Detect_Features {
 				++LineNum;
 			}
 		}
-		image.setOverlay(overlay);
+	    ImagePlus i2 = image.flatten();
+		i2.show();
+		image.show();
+		 	
 		return pixels;
 	}
 	

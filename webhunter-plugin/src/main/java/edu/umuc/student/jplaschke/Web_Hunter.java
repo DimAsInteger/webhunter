@@ -91,6 +91,7 @@ public class Web_Hunter implements PlugIn {
 		// Read scale information
 		//IJ.showMessage("width = "+width+" height = "+height);
 		readScale.setImage(image);
+		IJ.showStatus("Read Scale");
 		readScale.process(image);
 
 		image = readScale.getImage();
@@ -99,10 +100,12 @@ public class Web_Hunter implements PlugIn {
 	    
 	    IJ.log("fullname = "+fullFname);
 	    semInfo.readSemInfo(fullFname, width, height, bottomHeight);
-		simpleThreshold.setImage(image);  
+		IJ.showStatus("Threshold image");
+	    simpleThreshold.setImage(image);  
 		simpleThreshold.setHeight(height);
 		image = simpleThreshold.process(image);
-	  
+
+		IJ.showStatus("Detecting features");
 		// Feature detection
 		detectFeatures.setImage(image);
 		detectFeatures.setHeight(height);
