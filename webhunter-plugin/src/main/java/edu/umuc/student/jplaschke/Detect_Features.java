@@ -104,8 +104,6 @@ public class Detect_Features {
 			                     // if curRunBlack is 20 or more ignore the slice
 			                     // mark as possible circle
 			int prevTop = -1;
-			int delta = 0;
-			int firstWhite = -1;
 			
 			for (int y=0; y < height; y++) {
 				IJ.showProgress(x*y, width*height);
@@ -115,7 +113,6 @@ public class Detect_Features {
 						// top edge starts with 255
 						//prevTop = (int)pixels[x + (y-4) * width];
 						curRunBlack = 0;
-						delta = (int)pixels[x + y * width] - prevTop;
 						// Need to determine thickness constant from scale
 						// TODO - need to detect brightness cutoff 60 is magic number
 						//        use histogram of some sort?
@@ -136,7 +133,6 @@ public class Detect_Features {
 							
 							state = LOOK_FOR_BOTTOM_EDGE;
 							prevTop = -1;
-							firstWhite = -1;
 						}
 					
 					break;
@@ -146,16 +142,14 @@ public class Detect_Features {
 						// bottom edge is found  change in pixel value is found
 						try {
 							//prevTop = (int)pixels[x + (y-4) * width];
-							delta = prevTop - (int)pixels[x + y * width];
 						//	IJ.log("bottom delta "+delta);
 							if (((pixels[x + y * width])&0xFF) == (int)10) {
 								++curRunBlack;
 							} else if ((int)(pixels[x + y * width]&0xFF) == (int)80) {
 								bottomY = y+1;
-								firstWhite = y;
 								state = COUNT_SEPARATION;
 								curRunBlack = 0;
-							}
+							}							
 							
 						} catch (Exception e) {
 							IJ.log("EXCEPTION found at y="+y+" x="+x+" thickness = "+(bottomY-topY));
@@ -194,7 +188,10 @@ public class Detect_Features {
 							
 						}
 						// determine thickness based on scale -TODO
-						if ((thickness >= 4) && (thickness <= 16)) {
+						int maxThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.8);
+						int minThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.2);
+						
+						if ((thickness >= minThickness) && (thickness <= maxThickness)) {
 							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
 							LinePoint lp = new LinePoint(x, topY+halfThickness, thickness, false);
@@ -264,13 +261,12 @@ public class Detect_Features {
 			    String text = "Line "+LineNum+" thickness = "
 			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" nm";
 				Font font = new Font("SansSerif", Font.PLAIN, 96);
-				if (roi != null) {
-					if (roi.getYBase() - y < 96) {
-						separateY = 100;
-					} else {
-						separateY = 20;
-					}
+				if (y/2 == 0) {
+					separateY = 100;
+				} else {
+					separateY = 0;
 				}
+				
 			    roi = new TextRoi(100, y-separateY, text, font); 
 			    roi.setStrokeColor(Color.white); 
 				roi.setNonScalable(true); 
@@ -280,15 +276,17 @@ public class Detect_Features {
 				for (int i=0; i<width; i++) {
 			    	y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
-			    	
-			    	try {
-			    	   pixels[i + y * width] = (byte)255;				     
-			    	   pixels[i + (y+1) * width] = (byte)255;			   
-			    	} catch (Exception e) {
-			    		//IJ.log(e.getMessage());
-			    		IJ.log(e.getMessage());
-			    	}
-			    }
+			    
+			    	if (y < height) {
+				    	try {
+				    	   pixels[i + y * width] = (byte)255;				     
+				    	   pixels[i + (y+1) * width] = (byte)255;			   
+				    	} catch (Exception e) {
+				    		//IJ.log(e.getMessage());
+				    		IJ.log(e.getMessage());
+				    	}
+				    }
+				}
 				++LineNum;
 			}
 		}

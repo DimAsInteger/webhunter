@@ -30,24 +30,24 @@ public class Simple_Threshold  {
 	private int height;
 
 	// plugin parameters
-	public double value;
+	public double threshold;
 	public String name;
 
 	
 	private boolean showDialog() {
-		GenericDialog gd = new GenericDialog("Process pixels");
+		GenericDialog gd = new GenericDialog("Web Hunter Parameters");
 
 		// default value is 0.00, 2 digits right of the decimal point
-		gd.addNumericField("value", 0.00, 2);
-		gd.addStringField("name", "John");
+		gd.addStringField("name", "Spider1");
+		gd.addNumericField("threshold", 135, 3);
 
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 
 		// get entered values
-		value = gd.getNextNumber();
 		name = gd.getNextString();
+		threshold = gd.getNextNumber();
 
 		return true;
 	}
@@ -76,12 +76,13 @@ public class Simple_Threshold  {
 	 * @param image the image (possible multi-dimensional)
 	 */
 	public ImagePlus process(ImagePlus image) {
+		if (showDialog()) {
 		// slice numbers start with 1 for historical reasons
-		for (int i = 1; i <= image.getStackSize(); i++) {
-			ImageProcessor ip = process(image.getStack().getProcessor(i));
-			image.getStack().setProcessor(ip, i);
+			for (int i = 1; i <= image.getStackSize(); i++) {
+				ImageProcessor ip = process(image.getStack().getProcessor(i));
+				image.getStack().setProcessor(ip, i);
+			}
 		}
-		
 		return image;
 	}
 
@@ -108,8 +109,8 @@ public class Simple_Threshold  {
 			
 			for (int y=0;y < height; y++) {
 				// process each pixel of the line
-				// Set pixel to 10 if the value is greater than 145
-				if ((int)(pixels[x + y * width]&0xFF) > 145) {
+				// Set pixel to 10 if the value is greater than threshold
+				if ((int)(pixels[x + y * width]&0xFF) > threshold) {
 					pixels[x + y * width] = (byte)10;
 			    } else {
 				   pixels[x + y * width] = (byte)80;

@@ -11,8 +11,6 @@ package edu.umuc.student.jplaschke;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
-import ij.gui.GenericDialog;
-import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
 /**

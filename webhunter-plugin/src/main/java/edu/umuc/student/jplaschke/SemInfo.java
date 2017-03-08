@@ -50,6 +50,10 @@ public class SemInfo {
 		return  (double)this.scale / (double)this.barLength;
 	}
 	
+	public int numPixelsInOneMicron() {
+		return (int)Math.round(1.00 / pixelLengthinMicrons());
+	}
+	
 	public double getMicronLength(int lenPixels) {
 	    return pixelLengthinMicrons()*(double)lenPixels;
 	}
