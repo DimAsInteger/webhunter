@@ -77,7 +77,6 @@ public class Simple_Threshold  {
 	 */
 	public ImagePlus process(ImagePlus image) {
 		// slice numbers start with 1 for historical reasons
-		IJ.showMessage("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++) {
 			ImageProcessor ip = process(image.getStack().getProcessor(i));
 			image.getStack().setProcessor(ip, i);
@@ -104,13 +103,13 @@ public class Simple_Threshold  {
 	// processing of GRAY8 images
 	public byte[] process(byte[] pixels) {
 		
-		IJ.showMessage("height = "+height+" width = "+width);
+		IJ.log("height = "+height+" width = "+width);
 		for (int x=0; x < width; x++) {
 			
 			for (int y=0;y < height; y++) {
 				// process each pixel of the line
-				// Set pixel to 255 if the value is greater than 149
-				if ((int)(pixels[x + y * width]&0xFF) > 149) {
+				// Set pixel to 10 if the value is greater than 145
+				if ((int)(pixels[x + y * width]&0xFF) > 145) {
 					pixels[x + y * width] = (byte)10;
 			    } else {
 				   pixels[x + y * width] = (byte)80;

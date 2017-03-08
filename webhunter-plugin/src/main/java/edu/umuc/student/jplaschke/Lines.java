@@ -15,6 +15,9 @@ public class Lines {
 	private ArrayList<ArrayList<LinePoint>> ListOfLines;
 	private int lineCount = 0;
 	private ArrayList<LineInfo> EquationOfLines;
+	private int prevY = 0;
+	private int minSeparation = 5000;
+	private int maxThickness = 0;
 	
 	public Lines(int size) {
 		ListOfLines = new ArrayList<ArrayList<LinePoint>>();
@@ -42,6 +45,12 @@ public class Lines {
 		if (lineNum > lineCount) {
 		   lineCount = lineNum+1;
 		}
+		int diff = Math.abs(this.prevY - lp.y);
+		if (diff < this.minSeparation) {
+	        	minSeparation = diff/2;
+	        	this.prevY = lp.y;
+	        	IJ.log("minSep = "+minSeparation);
+	    }
  	} 
 	
 	// Add point to closest line
@@ -60,7 +69,7 @@ public class Lines {
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
 				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
-				if ((dist < minDistance) && (dist < 40)) {
+				if ((dist < minDistance) && (dist < (minSeparation-3))) {
 						minDistance = dist;
 						lineNumToAddTo = line;  
 						cp = point;
@@ -70,7 +79,7 @@ public class Lines {
 		}
 	
 		if (lineNumToAddTo != null) {
-	        lineNumToAddTo.add(lp);
+	        lineNumToAddTo.add(lp);  
 		} else {
 			if (dist<100) IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
 		}

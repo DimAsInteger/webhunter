@@ -8,9 +8,14 @@
 
 package edu.umuc.student.jplaschke;
 
+import java.awt.Color;
+import java.awt.Font;
+
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import ij.gui.Overlay;
+import ij.gui.TextRoi;
 import ij.process.ImageProcessor;
 
 /**
@@ -22,7 +27,7 @@ public class Detect_Features {
 	
 	private final int LOOK_FOR_TOP_EDGE = 0;
 	private final int LOOK_FOR_BOTTOM_EDGE = 1;
-	private final int SKIP = 2;
+	private final int COUNT_SEPARATION = 2;
 	private final int BOTTOM_EDGE_FOUND = 3;
 	
 	protected ImagePlus image;
@@ -81,12 +86,12 @@ public class Detect_Features {
 		int state;  
 		int lineNum = 0;
 		
-		IJ.showMessage("Start detect features");
+		IJ.log("Start detect features");
 		// Use a state machine to detect the top endge and bottom edge
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
 		// NOTE: magic number 10 should match add point (distance to closest line
-		for (int x=140; x < width; x+=7) {
+		for (int x=140; x < width; x+=10) {
 			state = LOOK_FOR_TOP_EDGE;
 			int topY = -1;
 			int bottomY = -1;
@@ -100,9 +105,6 @@ public class Detect_Features {
 			for (int y=0; y < height; y++) {
 				IJ.showProgress(x*y, width*height);
 				switch(state) {
-				    case SKIP:
-				       curRunBlack = 0;
-					break;
 					
 					case LOOK_FOR_TOP_EDGE:
 						// top edge starts with 255
@@ -146,7 +148,8 @@ public class Detect_Features {
 							} else if ((int)(pixels[x + y * width]&0xFF) == (int)80) {
 								bottomY = y+1;
 								firstWhite = y;
-								state = BOTTOM_EDGE_FOUND;
+								state = COUNT_SEPARATION;
+								curRunBlack = 0;
 							}
 							
 						} catch (Exception e) {
@@ -155,10 +158,29 @@ public class Detect_Features {
 							e.printStackTrace();
 						}
 					break;
-					
+                    // make sure there is a run of grey 
+					// This means the edge is likely not in a circle
+				    case COUNT_SEPARATION:
+				    	if ((int)(pixels[x + y * width]&0xFF) == (int)80) {
+							++curRunBlack;
+							
+						}
+				    	if ((int)(pixels[x + y * width]&0xFF) == (int)10) {
+							if (curRunBlack > 40) {
+								state = BOTTOM_EDGE_FOUND;
+							} else {
+								state = LOOK_FOR_TOP_EDGE;
+							}				
+						}
+						if (curRunBlack > 40) {
+							state = BOTTOM_EDGE_FOUND;
+						} 
+		
+				    break;
+						
 					case BOTTOM_EDGE_FOUND:
 						int thickness = bottomY - topY; // add eight to account for top edge
-				//		int halfThickness = 
+						int halfThickness = (int)Math.round(((float)thickness)/2.0);
 						if (x<500) {
 							IJ.log("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
 							+"x= "+x+" y= "+y+" thickness= "+thickness+
@@ -167,10 +189,10 @@ public class Detect_Features {
 							
 						}
 						// determine thickness based on scale -TODO
-						if ((thickness >= 4) && (thickness <= 17)) {
+						if ((thickness >= 4) && (thickness <= 16)) {
 							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
-							LinePoint lp = new LinePoint(x, topY, thickness, false);
+							LinePoint lp = new LinePoint(x, topY+halfThickness, thickness, false);
 							if (x==140) {
 								lines.addPointToLine(lineNum, lp);
 								++lineNum;
@@ -182,6 +204,7 @@ public class Detect_Features {
 						state = LOOK_FOR_TOP_EDGE;
 						topY = 0;
 						bottomY = 0;
+				
 					break;
 				}
 				
@@ -221,25 +244,36 @@ public class Detect_Features {
 	}
 	
 	private byte[] drawLinesInWhite(byte[] pixels) {
+		int LineNum = 1;
+	    Overlay overlay = new Overlay();	
 		for (LineInfo li : lines.getEquationOfLines()) {
+		        
 			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
-			    for (int i=0; i<width; i++) {
-			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
+
+				int y = (int) (Math.round((double)100*li.slope) + Math.round(li.yIntercept));
+			    y = -y;
+				Font font = new Font("SansSerif", Font.PLAIN, 9); 
+			    TextRoi roi = new TextRoi(100, y, "Line "+LineNum+" thickness = "+li.getThickness(), font); 
+			    overlay.add(roi);
+			    roi.setStrokeColor(Color.WHITE);
+			    
+				for (int i=0; i<width; i++) {
+			    	y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
 			    	
 			    	try {
 			    	   pixels[i + y * width] = (byte)255;				     
-			    	   pixels[i + (y+1) * width] = (byte)255;				     
-			    	   pixels[i + (y-1) * width] = (byte)255;				     
-				    	   
+			    	   pixels[i + (y+1) * width] = (byte)255;			   
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());
 			    		IJ.log(e.getMessage());
 			    	}
 			    }
+				++LineNum;
 			}
 		}
+		image.setOverlay(overlay);
 		return pixels;
 	}
 	

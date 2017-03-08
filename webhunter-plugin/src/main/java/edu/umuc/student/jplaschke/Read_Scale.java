@@ -74,7 +74,7 @@ public class Read_Scale {
 	 */
 	public void process(ImagePlus image) {
 		// slice numbers start with 1 for historical reasons
-		IJ.showMessage("image.getStackSize() "+image.getStackSize());
+		IJ.log("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++)
 			process(image.getStack().getProcessor(i));
 	}

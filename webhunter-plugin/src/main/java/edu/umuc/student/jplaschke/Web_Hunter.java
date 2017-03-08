@@ -11,12 +11,13 @@ package edu.umuc.student.jplaschke;
 
 import java.io.File;
 
-import com.asprise.ocr.Ocr;
-
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.GenericDialog;
+import ij.io.OpenDialog;
+import ij.plugin.PlugIn;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 import edu.umuc.student.jplaschke.Simple_Threshold;
@@ -38,7 +39,7 @@ import edu.umuc.student.jplaschke.Simple_Threshold;
  * 
  * Adapted from Johannes Schindelin's example-legacy-plugin (imagej)
  */
-public class Web_Hunter implements PlugInFilter {
+public class Web_Hunter implements PlugIn {
 	protected ImagePlus image;
 
 	// image property members
@@ -55,36 +56,43 @@ public class Web_Hunter implements PlugInFilter {
 	private Read_Scale readScale;
 	private Detect_Features detectFeatures;
 	
-	@Override
-	public int setup(String arg, ImagePlus imp) {
+	//@Override
+	public int setup(String arg) {
 		IJ.showStatus("Starting");
 		if (arg.equals("about")) {
 			showAbout();
-			return DONE;
+		//	return DONE;
 		}
+		OpenDialog od = new OpenDialog("Select micrograph");
 
-		image = imp;
-		simpleThreshold = new Simple_Threshold();
+		this.image = IJ.openImage(od.getPath());
+		image.show();
+		    
+	    simpleThreshold = new Simple_Threshold();
 		readScale = new Read_Scale();
 		detectFeatures = new Detect_Features();
-		
-		return DOES_8G | DOES_16 | DOES_32 | DOES_RGB;
+		return 0;
 	}
 
 	@Override
-	public void run(ImageProcessor ip) {
-	    SemInfo semInfo = new SemInfo();
+	public void run(String arg) {
+		
+		this.setup("");
+		
+		SemInfo semInfo = new SemInfo();
 		String dir = image.getOriginalFileInfo().directory;
 	    String name = image.getOriginalFileInfo().fileName;
 	    String fullFname = dir+File.separator+name;
+
 		// get width and height
-		width = ip.getWidth();
-		height = ip.getHeight();
+		width = image.getWidth();
+		height = image.getHeight();
         int bottomHeight = height;
 		// Read scale information
 		//IJ.showMessage("width = "+width+" height = "+height);
 		readScale.setImage(image);
-		readScale.process(ip);
+		readScale.process(image);
+
 		image = readScale.getImage();
 		// Basic thresholding 
 		height = readScale.getSemHeight();
@@ -93,12 +101,12 @@ public class Web_Hunter implements PlugInFilter {
 	    semInfo.readSemInfo(fullFname, width, height, bottomHeight);
 		simpleThreshold.setImage(image);  
 		simpleThreshold.setHeight(height);
-		ip = simpleThreshold.process(ip);
+		image = simpleThreshold.process(image);
 	  
 		// Feature detection
 		detectFeatures.setImage(image);
 		detectFeatures.setHeight(height);
-		detectFeatures.process(ip);
+		detectFeatures.process(image);
 		
 		// Display results
 		//process(ip);
@@ -153,11 +161,14 @@ public class Web_Hunter implements PlugInFilter {
 		// start ImageJ
 		new ImageJ();
 
-		// open the Clown sample
-		ImagePlus image = IJ.openImage("http://imagej.net/images/clown.jpg");
+        OpenDialog od = new OpenDialog("Select micrograph");
+		
+		// open the chosen file
+		ImagePlus image = IJ.openImage(od.getPath());
 		image.show();
 
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");
 	}
+
 }
