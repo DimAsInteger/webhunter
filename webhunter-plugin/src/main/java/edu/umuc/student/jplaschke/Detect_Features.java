@@ -61,23 +61,23 @@ public class Detect_Features {
 	 *
 	 * @param image the image (possible multi-dimensional)
 	 */
-	public void process(ImagePlus image, SemInfo semInfo) {
+	public void process(ImagePlus image, SemInfo semInfo, int startingX) {
 		this.semInfo = semInfo;
 		// slice numbers start with 1 for historical reasons
 		IJ.log("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i));
+			process(image.getStack().getProcessor(i), startingX);
 	}
 
 	// Select processing method depending on image type
-	public void process(ImageProcessor ip) {
+	public void process(ImageProcessor ip, int startingX) {
 		int type = image.getType();
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
-			byte[] pixels = process( (byte[]) ip.getPixels() );
+			byte[] pixels = process( (byte[]) ip.getPixels(), startingX );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -86,7 +86,7 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels) {
+	public byte[] process(byte[] pixels, int startingX) {
 		
 		int state;  
 		int lineNum = 0;
@@ -96,7 +96,7 @@ public class Detect_Features {
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
 		// NOTE: magic number 10 should match add point (distance to closest line
-		for (int x=140; x < width; x+=10) {
+		for (int x=startingX; x < width; x+=10) {
 			state = LOOK_FOR_TOP_EDGE;
 			int topY = -1;
 			int bottomY = -1;
@@ -195,7 +195,7 @@ public class Detect_Features {
 							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
 							LinePoint lp = new LinePoint(x, topY+halfThickness, thickness, false);
-							if (x==140) {
+							if (x==startingX) {
 								lines.addPointToLine(lineNum, lp);
 								++lineNum;
 							} else {
@@ -259,7 +259,7 @@ public class Detect_Features {
 			    y = -y;
 			    NumberFormat formatter = new DecimalFormat("#0.000");     
 			    String text = "Line "+LineNum+" thickness = "
-			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" nm";
+			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" "+IJ.micronSymbol+"m";
 				Font font = new Font("SansSerif", Font.PLAIN, 96);
 				if (y/2 == 0) {
 					separateY = 100;

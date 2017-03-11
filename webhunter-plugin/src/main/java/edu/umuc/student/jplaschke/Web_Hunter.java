@@ -108,7 +108,7 @@ public class Web_Hunter implements PlugIn {
 		// Feature detection
 		detectFeatures.setImage(image);
 		detectFeatures.setHeight(height);
-		detectFeatures.process(image, semInfo);
+		detectFeatures.process(image, semInfo, (int)simpleThreshold.startingX);
 		
 		// Display results
 		//process(ip);
@@ -162,12 +162,6 @@ public class Web_Hunter implements PlugIn {
 
 		// start ImageJ
 		new ImageJ();
-
-        OpenDialog od = new OpenDialog("Select micrograph");
-		
-		// open the chosen file
-		ImagePlus image = IJ.openImage(od.getPath());
-		image.show();
 
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");

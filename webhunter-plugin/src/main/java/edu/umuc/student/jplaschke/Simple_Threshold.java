@@ -32,6 +32,7 @@ public class Simple_Threshold  {
 	// plugin parameters
 	public double threshold;
 	public String name;
+	public double startingX;
 
 	
 	private boolean showDialog() {
@@ -40,6 +41,7 @@ public class Simple_Threshold  {
 		// default value is 0.00, 2 digits right of the decimal point
 		gd.addStringField("name", "Spider1");
 		gd.addNumericField("threshold", 135, 3);
+		gd.addNumericField("startingX", 140, 0);
 
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -48,6 +50,7 @@ public class Simple_Threshold  {
 		// get entered values
 		name = gd.getNextString();
 		threshold = gd.getNextNumber();
+		startingX = gd.getNextNumber();
 
 		return true;
 	}
