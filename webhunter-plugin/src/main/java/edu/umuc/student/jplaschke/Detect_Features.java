@@ -26,11 +26,12 @@ import ij.process.ImageProcessor;
  * @author John Plaschke
  */
 public class Detect_Features {
-	
-	private final int LOOK_FOR_TOP_EDGE = 0;
-	private final int LOOK_FOR_BOTTOM_EDGE = 1;
-	private final int COUNT_SEPARATION = 2;
-	private final int BOTTOM_EDGE_FOUND = 3;
+
+	private final int LOOK_FOR_TOP_BG = 0;
+	private final int LOOK_FOR_TOP_EDGE = 1;
+	private final int LOOK_FOR_BOTTOM_EDGE = 2;
+	private final int COUNT_SEPARATION = 3;
+	private final int BOTTOM_EDGE_FOUND = 4;
 	
 	protected ImagePlus image;
 
@@ -61,23 +62,24 @@ public class Detect_Features {
 	 *
 	 * @param image the image (possible multi-dimensional)
 	 */
-	public void process(ImagePlus image, SemInfo semInfo, int startingX) {
+	public void process(ImagePlus image, SemInfo semInfo, int startingX, int lineSep,
+			             int xInc) {
 		this.semInfo = semInfo;
 		// slice numbers start with 1 for historical reasons
 		IJ.log("image.getStackSize() "+image.getStackSize());
 		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i), startingX);
+			process(image.getStack().getProcessor(i), startingX, lineSep, xInc);
 	}
 
 	// Select processing method depending on image type
-	public void process(ImageProcessor ip, int startingX) {
+	public void process(ImageProcessor ip, int startingX, int lineSep, int xInc) {
 		int type = image.getType();
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
-			byte[] pixels = process( (byte[]) ip.getPixels(), startingX );
+			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -86,7 +88,7 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels, int startingX) {
+	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc) {
 		
 		int state;  
 		int lineNum = 0;
@@ -95,9 +97,8 @@ public class Detect_Features {
 		// Use a state machine to detect the top endge and bottom edge
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
-		// NOTE: magic number 10 should match add point (distance to closest line
-		for (int x=startingX; x < width; x+=10) {
-			state = LOOK_FOR_TOP_EDGE;
+		for (int x=startingX; x < width; x+= xInc) {
+			state = LOOK_FOR_TOP_BG;
 			int topY = -1;
 			int bottomY = -1;
 			int curRunBlack = 0; // longest run of black use to detect circle
@@ -108,6 +109,25 @@ public class Detect_Features {
 			for (int y=0; y < height; y++) {
 				IJ.showProgress(x*y, width*height);
 				switch(state) {
+		
+				    case LOOK_FOR_TOP_BG:
+				    	if ((int)(pixels[x + y * width]&0xFF) == (int)80) {
+							++curRunBlack;
+							
+						}
+				    	if ((int)(pixels[x + y * width]&0xFF) == (int)10) {
+							if (curRunBlack >= lineSep) {
+								state = LOOK_FOR_TOP_EDGE;
+							} else {
+								curRunBlack = 0;
+								state = LOOK_FOR_TOP_BG;
+							}				
+						}
+						if (curRunBlack >= lineSep) {
+							state = LOOK_FOR_TOP_EDGE;
+						} 
+				    	
+					break;
 					
 					case LOOK_FOR_TOP_EDGE:
 						// top edge starts with 255
@@ -165,13 +185,14 @@ public class Detect_Features {
 							
 						}
 				    	if ((int)(pixels[x + y * width]&0xFF) == (int)10) {
-							if (curRunBlack > 40) {
+							if (curRunBlack >= lineSep) {
 								state = BOTTOM_EDGE_FOUND;
 							} else {
-								state = LOOK_FOR_TOP_EDGE;
+								curRunBlack = 0;
+								state = LOOK_FOR_TOP_BG;
 							}				
 						}
-						if (curRunBlack > 40) {
+						if (curRunBlack >= lineSep) {
 							state = BOTTOM_EDGE_FOUND;
 						} 
 		
@@ -190,7 +211,7 @@ public class Detect_Features {
 						// determine thickness based on scale -TODO
 						int maxThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.8);
 						int minThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.2);
-						
+						//IJ.log("max "+maxThickness+" min "+minThickness);
 						if ((thickness >= minThickness) && (thickness <= maxThickness)) {
 							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
 							// TODO change topY to middleY?
@@ -201,9 +222,18 @@ public class Detect_Features {
 							} else {
 								lines.addPointToClosestLine(lp);
 							}
-						} 
+						} else {
+							LinePoint lp = new LinePoint(x, topY, maxThickness, true);
+							if (x==startingX) {
+								lines.addPointToLine(lineNum, lp);
+								++lineNum;
+							} else {
+								lines.addPointToClosestLine(lp);
+							}
+							IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
+						}
 						curRunBlack = 0;
-						state = LOOK_FOR_TOP_EDGE;
+						state = LOOK_FOR_TOP_BG;
 						topY = 0;
 						bottomY = 0;
 				

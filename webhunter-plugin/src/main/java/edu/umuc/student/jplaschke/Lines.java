@@ -17,7 +17,6 @@ public class Lines {
 	private ArrayList<LineInfo> EquationOfLines;
 	private int prevY = 0;
 	private int minSeparation = 5000;
-	private int maxThickness = 0;
 	
 	public Lines(int size) {
 		ListOfLines = new ArrayList<ArrayList<LinePoint>>();
@@ -47,7 +46,7 @@ public class Lines {
 		}
 		int diff = Math.abs(this.prevY - lp.y);
 		if (diff < this.minSeparation) {
-	        	minSeparation = diff/2;
+	        	minSeparation = (int)Math.round((double)diff/4.0*3.0);
 	        	this.prevY = lp.y;
 	        	IJ.log("minSep = "+minSeparation);
 	    }
@@ -69,7 +68,7 @@ public class Lines {
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
 				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
-				if ((dist < minDistance) && (dist < (minSeparation-3))) {
+				if ((dist < minDistance) && (dist < (minSeparation))) {
 						minDistance = dist;
 						lineNumToAddTo = line;  
 						cp = point;
@@ -128,7 +127,6 @@ public class Lines {
 
 		    // print results
 		    
-
 		    // analyze results
 		    int df = n - 2;
 		    double rss = 0.0;      // residual sum of squares

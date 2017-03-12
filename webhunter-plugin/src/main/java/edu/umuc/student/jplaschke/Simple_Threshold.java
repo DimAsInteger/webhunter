@@ -33,7 +33,8 @@ public class Simple_Threshold  {
 	public double threshold;
 	public String name;
 	public double startingX;
-
+	public double lineSep;
+	public double xInc;
 	
 	private boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Web Hunter Parameters");
@@ -42,6 +43,8 @@ public class Simple_Threshold  {
 		gd.addStringField("name", "Spider1");
 		gd.addNumericField("threshold", 135, 3);
 		gd.addNumericField("startingX", 140, 0);
+		gd.addNumericField("line separation", 40, 0);
+		gd.addNumericField("X increment", 10, 0);
 
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -51,7 +54,8 @@ public class Simple_Threshold  {
 		name = gd.getNextString();
 		threshold = gd.getNextNumber();
 		startingX = gd.getNextNumber();
-
+		xInc = gd.getNextNumber();
+				
 		return true;
 	}
 
