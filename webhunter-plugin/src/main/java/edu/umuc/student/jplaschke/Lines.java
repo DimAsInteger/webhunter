@@ -64,7 +64,7 @@ public class Lines {
 		// NOTE: 10 is the slice thickness
 		lp.y=-lp.y;
         LinePoint cp = null;  // for debug - closest point
-        double dist = 100;
+        double dist = 10000;
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
 				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));

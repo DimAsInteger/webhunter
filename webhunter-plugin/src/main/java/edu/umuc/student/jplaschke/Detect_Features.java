@@ -222,15 +222,10 @@ public class Detect_Features {
 							} else {
 								lines.addPointToClosestLine(lp);
 							}
-						} else {
-							LinePoint lp = new LinePoint(x, topY, maxThickness, true);
-							if (x==startingX) {
-								lines.addPointToLine(lineNum, lp);
-								++lineNum;
-							} else {
-								lines.addPointToClosestLine(lp);
-							}
+						} else if (thickness >= 30) {
 							IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
+							LinePoint cp = new LinePoint(x, topY, thickness, false);
+							circles.addPointToCircleSet(cp);
 						}
 						curRunBlack = 0;
 						state = LOOK_FOR_TOP_BG;
@@ -280,6 +275,7 @@ public class Detect_Features {
 	    Overlay overlay = new Overlay();
 	    TextRoi roi = null;
 	    int separateY = 0;
+	    
 	    for (LineInfo li : lines.getEquationOfLines()) {
 		        
 			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
@@ -290,9 +286,9 @@ public class Detect_Features {
 			    NumberFormat formatter = new DecimalFormat("#0.000");     
 			    String text = "Line "+LineNum+" thickness = "
 			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" "+IJ.micronSymbol+"m";
-				Font font = new Font("SansSerif", Font.PLAIN, 96);
+				Font font = new Font("SansSerif", Font.PLAIN, 86);
 				if (y/2 == 0) {
-					separateY = 100;
+					separateY = 150;
 				} else {
 					separateY = 0;
 				}
