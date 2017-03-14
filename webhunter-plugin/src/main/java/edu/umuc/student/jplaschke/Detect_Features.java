@@ -16,6 +16,7 @@ import java.text.NumberFormat;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import ij.gui.OvalRoi;
 import ij.gui.Overlay;
 import ij.gui.TextRoi;
 import ij.process.ImageProcessor;
@@ -136,13 +137,6 @@ public class Detect_Features {
 						// Need to determine thickness constant from scale
 						// TODO - need to detect brightness cutoff 60 is magic number
 						//        use histogram of some sort?
-		//				if ((int)pixels[x + y * width] == 255) {
-		//					++curRunWhite;
-		//				}
-			//			if (curRunWhite > 10) {
-			//				continue;
-			//			}
-						// TODO: make calculation of 60 
 						if (((pixels[x + y * width])&0xFF) == (int)10) {
 							topY = y-1; 
 						
@@ -241,11 +235,15 @@ public class Detect_Features {
 			
 		}
 		lines.CalculateLinearReqressions();
+		
+		// look for circles
+		this.circles.findCircles(lines, pixels, width, height);
+		
+		pixels = this.drawCircles();
+		image.getProcessor().setPixels((Object)pixels);
+
 		// draw the lines in white
 		pixels = this.drawLinesInWhite(pixels);
-		
-		// look for cirles
-		this.circles.findCircles(lines, pixels, width, height);
 		
 		return (pixels);
 	}
@@ -270,6 +268,22 @@ public class Detect_Features {
 
 	public void setHeight(int height) {
 		this.height = height;
+	}
+	
+	private byte[] drawCircles() {
+		Overlay overlay = new Overlay();
+		for (CircleInfo ci : circles.getListofCircles()) {
+			OvalRoi ovalRoi = new OvalRoi(ci.getX(), ci.getY(), ci.getRadius()*2, ci.getRadius()*2);
+			ovalRoi.setStrokeColor(Color.white); 
+			ovalRoi.setStrokeWidth(4.0);
+			ovalRoi.drawPixels(this.image.getProcessor());
+			image.setOverlay(overlay);
+			overlay.add(ovalRoi);
+	
+		}
+		ImagePlus i2 = image.flatten();
+		i2.show();
+		return (byte[])image.getProcessor().getPixels();
 	}
 	
 	private byte[] drawLinesInWhite(byte[] pixels) {
@@ -305,14 +319,18 @@ public class Detect_Features {
 			    	y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
 			    
-			    	if (y < height) {
-				    	try {
-				    	   pixels[i + y * width] = (byte)255;				     
-				    	   pixels[i + (y+1) * width] = (byte)255;			   
-				    	} catch (Exception e) {
-				    		//IJ.log(e.getMessage());
-				    		IJ.log(e.getMessage());
-				    	}
+			    	if (y < height)  {
+			    		if ((int)(pixels[i + y * width]&0xFF) == (int)10) {
+					    	try {
+					    	   pixels[i + y * width] = (byte)255;				     
+					    	   pixels[i + (y+1) * width] = (byte)255;			   
+					    	} catch (Exception e) {
+					    		//IJ.log(e.getMessage());
+					    		IJ.log(e.getMessage());
+					    	}
+			    		} else {
+			    			//IJ.log("LINE ERROR line is not black at x="+i+" y="+y);
+			    		}
 				    }
 				}
 				++LineNum;

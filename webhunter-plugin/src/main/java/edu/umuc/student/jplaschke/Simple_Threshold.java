@@ -42,8 +42,8 @@ public class Simple_Threshold  {
 		// default value is 0.00, 2 digits right of the decimal point
 		gd.addStringField("name", "Spider1");
 		gd.addNumericField("threshold", 135, 3);
-		gd.addNumericField("startingX", 140, 0);
-		gd.addNumericField("line separation", 40, 0);
+		gd.addNumericField("startingX", 130, 0);
+		gd.addNumericField("line separation", 5, 0);
 		gd.addNumericField("X increment", 10, 0);
 
 		gd.showDialog();

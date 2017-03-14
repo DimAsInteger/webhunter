@@ -2,7 +2,13 @@ package edu.umuc.student.jplaschke;
 
 import ij.IJ;
 
+import java.awt.geom.Point2D;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Locale;
+
+import edu.umuc.student.jplaschke.CircleFitter.LocalException;
 
 /**
  * Data structure for Circles
@@ -12,6 +18,8 @@ import java.util.ArrayList;
  */
 public class Circles {
 	
+	private final int SEARCH_LEFT_EDGE = 0;
+	private final int SEARCH_RIGHT_EDGE = 1;
 	private int circleCount = 0;
 	private ArrayList<CircleInfo> ListofCircles;
 	private ArrayList<ArrayList<LinePoint>> allCirclePoints;
@@ -37,11 +45,53 @@ public class Circles {
 		}
 	}
 	
+	
+	private void performCircleRegression() {
+	    IJ.log("num circles "+allCirclePoints.size());
+	    int i = 1;
+	 	for (ArrayList<LinePoint> possibleCircle : allCirclePoints) {
+	 		if (possibleCircle != null) {
+		 		IJ.log("Circle "+i+" num points "+possibleCircle.size());
+		 		ArrayList list = new ArrayList();
+			    for (LinePoint point : possibleCircle) {
+		            IJ.log("point x="+point.x+" y="+point.y);
+		            list.add(new Point2D.Double(point.x,-point.y));
+				}
+			    Point2D.Double[] points =
+			    	     (Point2D.Double[]) list.toArray(new Point2D.Double[list.size()]);
+
+	    	   DecimalFormat format =
+	    	     new DecimalFormat("000.00000000",
+	    	                       new DecimalFormatSymbols(Locale.US));
+
+	    	   // fit a circle to the test points
+	    	   CircleFitter fitter = new CircleFitter();
+	    	   try {
+	    		   fitter.initialize(points);
+	    		   System.out.println("initial circle: x="
+ 	                      + format.format(fitter.getCenter().x)
+ 	                      + " x="     + format.format(fitter.getCenter().y)
+ 	                      + " r="     + format.format(fitter.getRadius()));
+	    		   int x = (int)Math.round(fitter.getCenter().x);
+	    		   int y = (int)Math.round(fitter.getCenter().y);
+	    		   int r = (int)Math.round(fitter.getRadius());
+	    		   
+	    		   CircleInfo ci = new CircleInfo(x, y, r, false);
+	    		   ListofCircles.add(ci);
+	    	   } catch (LocalException e) {
+	    		   // TODO Auto-generated catch block
+	    		   e.printStackTrace();
+	    	   }
+	    	   
+	 		}
+	 		++i;
+		}
+	 	
+	 	
+	}
 	// TODO: Chris - fill this is
 	// Use this to find circles
 	public void findCircles(Lines circles, byte[] pixels, int width, int height) {
-		
-		//this.printPossibleCircles();
 		
 		for (LineInfo li : circles.getEquationOfLines()) {
 			//IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
@@ -57,11 +107,11 @@ public class Circles {
 			    		// find runs of white (value > x)?
 			    		//(pixels[x + y * width]&0xFF)
 			    		// Look for 45 pixels above the line
-			    		searchCirclesHorizontalDir(positiveYintercept-45, positiveYintercept-5, width, 
+			    		searchCirclesHorizontalDir(pixels, positiveYintercept-45, positiveYintercept-5, width, 
 			    				(int)Math.round(li.slope), (int)Math.round(li.yIntercept));
 			    		
 			    		//Look for 45 pixels below the line
-			    		searchCirclesHorizontalDir(positiveYintercept+5, positiveYintercept+45, width, 
+			    		searchCirclesHorizontalDir(pixels, positiveYintercept+5, positiveYintercept+45, width, 
 			    				(int)Math.round(li.slope), (int)Math.round(li.yIntercept));
 			    		
 			    	} catch (Exception e) {
@@ -71,12 +121,27 @@ public class Circles {
 			    }
 			}
 		}
+		//this.printPossibleCircles();
+		this.performCircleRegression();
  	}
 
-	private void searchCirclesHorizontalDir(int top, int bottom, int width, int slope, int yIntercept) {
+	private void searchCirclesHorizontalDir(byte[] pixels, int top, int bottom, int width, int slope, int yIntercept) {
+		int state = SEARCH_LEFT_EDGE;
 		for (int y=top; y>bottom; y+=5) {
 			for (int x=0; x<width; x++) {
-				//(pixels[x + y * width]&0xFF)
+				if (state == SEARCH_LEFT_EDGE) {
+					if (((pixels[x + y * width])&0xFF) == (int)10) {
+						state = SEARCH_RIGHT_EDGE;
+						LinePoint cp = new LinePoint(x, y, -1, false);
+						addPointToCircleSet(cp);
+					}
+				} else {
+					if (((pixels[x + y * width])&0xFF) == (int)80) {
+						state = SEARCH_LEFT_EDGE;
+						LinePoint cp = new LinePoint(x, y, -1, false);
+						addPointToCircleSet(cp);
+					}
+				}
 			}
 			
 		}
