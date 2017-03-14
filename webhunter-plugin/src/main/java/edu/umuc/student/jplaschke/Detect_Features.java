@@ -226,6 +226,8 @@ public class Detect_Features {
 							IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp);
+							cp = new LinePoint(x, bottomY, thickness, false);
+							circles.addPointToCircleSet(cp);
 						}
 						curRunBlack = 0;
 						state = LOOK_FOR_TOP_BG;

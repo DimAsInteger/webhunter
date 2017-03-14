@@ -41,7 +41,7 @@ public class Circles {
 	// Use this to find circles
 	public void findCircles(Lines circles, byte[] pixels, int width, int height) {
 		
-		this.printPossibleCircles();
+		//this.printPossibleCircles();
 		
 		for (LineInfo li : circles.getEquationOfLines()) {
 			//IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
@@ -49,12 +49,20 @@ public class Circles {
 			    for (int i=0; i<width; i++) {
 			    	int y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
+			    	int positiveYintercept = (int)-li.yIntercept;
 			    	
 			    	try {
 			    	    // Create code here to find circles 
 			    		// look at lines parallel - above and below the line to 
 			    		// find runs of white (value > x)?
 			    		//(pixels[x + y * width]&0xFF)
+			    		// Look for 45 pixels above the line
+			    		searchCirclesHorizontalDir(positiveYintercept-45, positiveYintercept-5, width, 
+			    				(int)Math.round(li.slope), (int)Math.round(li.yIntercept));
+			    		
+			    		//Look for 45 pixels below the line
+			    		searchCirclesHorizontalDir(positiveYintercept+5, positiveYintercept+45, width, 
+			    				(int)Math.round(li.slope), (int)Math.round(li.yIntercept));
 			    		
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());
@@ -65,6 +73,16 @@ public class Circles {
 		}
  	}
 
+	private void searchCirclesHorizontalDir(int top, int bottom, int width, int slope, int yIntercept) {
+		for (int y=top; y>bottom; y+=5) {
+			for (int x=0; x<width; x++) {
+				//(pixels[x + y * width]&0xFF)
+			}
+			
+		}
+		
+	}
+	
 	public int getCircleCount() {
 		return circleCount;
 	}
