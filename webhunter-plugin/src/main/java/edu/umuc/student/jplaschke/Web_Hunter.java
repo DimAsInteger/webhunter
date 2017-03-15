@@ -109,7 +109,8 @@ public class Web_Hunter implements PlugIn {
 		detectFeatures.setImage(image);
 		detectFeatures.setHeight(height);
 		detectFeatures.process(image, semInfo, (int)simpleThreshold.startingX,
-				(int)simpleThreshold.lineSep, (int)simpleThreshold.xInc);
+				(int)simpleThreshold.lineSep, (int)simpleThreshold.xInc,
+				simpleThreshold.circleDiameter);
 		
 		// Display results
 		//process(ip);

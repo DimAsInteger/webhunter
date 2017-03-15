@@ -64,23 +64,24 @@ public class Detect_Features {
 	 * @param image the image (possible multi-dimensional)
 	 */
 	public void process(ImagePlus image, SemInfo semInfo, int startingX, int lineSep,
-			             int xInc) {
+			             int xInc, int circleDiameter) {
 		this.semInfo = semInfo;
 		// slice numbers start with 1 for historical reasons
-		IJ.log("image.getStackSize() "+image.getStackSize());
+		IJ.log("image.getStackSize() "+image.getStackSize()+" circleDiameter="+circleDiameter);
 		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i), startingX, lineSep, xInc);
+			process(image.getStack().getProcessor(i), startingX, lineSep, xInc, circleDiameter);
 	}
 
 	// Select processing method depending on image type
-	public void process(ImageProcessor ip, int startingX, int lineSep, int xInc) {
+	public void process(ImageProcessor ip, int startingX, int lineSep, int xInc,
+			               int circleDiameter) {
 		int type = image.getType();
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
-			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc );
+			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc, circleDiameter );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -89,7 +90,7 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc) {
+	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc, int circleDiameter) {
 		
 		int state;  
 		int lineNum = 0;
@@ -216,12 +217,12 @@ public class Detect_Features {
 							} else {
 								lines.addPointToClosestLine(lp);
 							}
-						} else if (thickness >= 30) {
-							IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
+						} else if (thickness >= maxThickness*3) {
+							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
-							circles.addPointToCircleSet(cp);
+							circles.addPointToCircleSet(cp, circleDiameter);
 							cp = new LinePoint(x, bottomY, thickness, false);
-							circles.addPointToCircleSet(cp);
+							circles.addPointToCircleSet(cp, circleDiameter);
 						}
 						curRunBlack = 0;
 						state = LOOK_FOR_TOP_BG;
@@ -237,7 +238,7 @@ public class Detect_Features {
 		lines.CalculateLinearReqressions();
 		
 		// look for circles
-		this.circles.findCircles(lines, pixels, width, height);
+		this.circles.findCircles(lines, pixels, width, height, circleDiameter);
 		
 		pixels = this.drawCircles();
 		image.getProcessor().setPixels((Object)pixels);
@@ -304,9 +305,9 @@ public class Detect_Features {
 			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" "+IJ.micronSymbol+"m";
 				Font font = new Font("SansSerif", Font.PLAIN, 86);
 				if (y/2 == 0) {
-					separateY = 150;
-				} else {
 					separateY = 0;
+				} else {
+					separateY = 150;
 				}
 				
 			    roi = new TextRoi(100, y-separateY, text, font); 
@@ -320,7 +321,7 @@ public class Detect_Features {
 			    	y = -y;
 			    
 			    	if (y < height)  {
-			    		if ((int)(pixels[i + y * width]&0xFF) == (int)10) {
+			    		if (true) { //((int)(pixels[i + y * width]&0xFF) == (int)10) {
 					    	try {
 					    	   pixels[i + y * width] = (byte)255;				     
 					    	   pixels[i + (y+1) * width] = (byte)255;			   

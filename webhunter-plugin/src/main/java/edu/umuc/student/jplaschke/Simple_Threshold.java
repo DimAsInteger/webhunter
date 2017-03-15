@@ -35,6 +35,7 @@ public class Simple_Threshold  {
 	public double startingX;
 	public double lineSep;
 	public double xInc;
+	public int circleDiameter;
 	
 	private boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Web Hunter Parameters");
@@ -45,6 +46,7 @@ public class Simple_Threshold  {
 		gd.addNumericField("startingX", 130, 0);
 		gd.addNumericField("line separation", 5, 0);
 		gd.addNumericField("X increment", 10, 0);
+		gd.addNumericField("circle diameter", 190, 0);
 
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -54,8 +56,10 @@ public class Simple_Threshold  {
 		name = gd.getNextString();
 		threshold = gd.getNextNumber();
 		startingX = gd.getNextNumber();
+		lineSep = gd.getNextNumber();
 		xInc = gd.getNextNumber();
-				
+		circleDiameter = (int)gd.getNextNumber();
+		
 		return true;
 	}
 
