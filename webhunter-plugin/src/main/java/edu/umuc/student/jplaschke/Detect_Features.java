@@ -217,7 +217,7 @@ public class Detect_Features {
 							} else {
 								lines.addPointToClosestLine(lp);
 							}
-						} else if (thickness >= maxThickness*3) {
+						} else if (thickness >= maxThickness*2) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp, circleDiameter);
@@ -305,7 +305,7 @@ public class Detect_Features {
 			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" "+IJ.micronSymbol+"m";
 				Font font = new Font("SansSerif", Font.PLAIN, 86);
 				if (y/2 == 0) {
-					separateY = 0;
+					separateY = -50;
 				} else {
 					separateY = 150;
 				}

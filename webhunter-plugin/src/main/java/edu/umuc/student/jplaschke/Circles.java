@@ -69,7 +69,7 @@ public class Circles {
 	    	   try {
 	    		   fitter.initialize(points);
 	    		   // minimize the residuals
-	    		  // int iter = fitter.minimize(100, 0.1, 1.0e-12);
+	    		   //int iter = fitter.minimize(100, 0.1, 1.0e-12);
 	    		   IJ.log("converged circle: x="
  	                      + format.format(fitter.getCenter().x)
  	                      + " x="     + format.format(fitter.getCenter().y)
@@ -84,7 +84,7 @@ public class Circles {
 	    		   }
 	    	   } catch (LocalException e) {
 	    		   // TODO Auto-generated catch block
-	    		   e.printStackTrace();
+	    		   //e.printStackTrace();
 	    	   }
 	    	   
 	 		}
@@ -112,12 +112,12 @@ public class Circles {
 			    		//(pixels[x + y * width]&0xFF)
 			    		// Look for 45 pixels above the line
 			    		int halfDiam = (int)Math.round((double)circleDiameter / 2.0);
-			    		searchCirclesHorizontalDir(pixels, positiveYintercept-halfDiam, positiveYintercept-5, width, 
-			    				(int)Math.round(li.slope), (int)Math.round(li.yIntercept),circleDiameter);
+			    		searchCirclesHorizontalDir(pixels, positiveYintercept-halfDiam, positiveYintercept-2, width, 
+			    				(int)Math.round(li.slope), circleDiameter);
 			    		
 			    		//Look for 45 pixels below the line
-			    		searchCirclesHorizontalDir(pixels, positiveYintercept+5, positiveYintercept+halfDiam, width, 
-			    				(int)Math.round(li.slope), (int)Math.round(li.yIntercept),circleDiameter);
+			    		searchCirclesHorizontalDir(pixels, positiveYintercept+2, positiveYintercept+halfDiam, width, 
+			    				                     (int)Math.round(li.yIntercept),circleDiameter);
 			    		
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());
@@ -132,10 +132,14 @@ public class Circles {
  	}
 
 	private void searchCirclesHorizontalDir(byte[] pixels, int top, int bottom, int width, 
-			                     int slope, int yIntercept, int circleDiameter) {
+			                     int slope, int circleDiameter) {
 		int state = SEARCH_LEFT_EDGE;
-		for (int y=top; y>bottom; y+=5) {
+		for (int i=top; i>bottom; i++) {
+			
 			for (int x=0; x<width; x++) {
+				int y = (int) (Math.round((double)x*slope) + Math.round(i));
+		    	y = -y;
+		    
 				if (state == SEARCH_LEFT_EDGE) {
 					if (((pixels[x + y * width])&0xFF) == (int)10) {
 						state = SEARCH_RIGHT_EDGE;
