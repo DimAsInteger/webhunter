@@ -321,7 +321,7 @@ public class Detect_Features {
 			    	y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
 			    
-			    	if (y < height)  {
+			    	if ((y < height) && (y > 0))  {
 			    		if (true) { //((int)(pixels[i + y * width]&0xFF) == (int)10) {
 					    	try {
 					    	   pixels[i + y * width] = (byte)255;				     

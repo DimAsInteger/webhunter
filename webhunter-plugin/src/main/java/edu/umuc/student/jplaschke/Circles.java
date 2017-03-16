@@ -117,7 +117,7 @@ public class Circles {
 			    		
 			    		//Look for 45 pixels below the line
 			    		searchCirclesHorizontalDir(pixels, positiveYintercept+2, positiveYintercept+halfDiam, width, 
-			    				                     (int)Math.round(li.yIntercept),circleDiameter);
+			    				                     (int)Math.round(li.slope),circleDiameter);
 			    		
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());
@@ -135,7 +135,7 @@ public class Circles {
 			                     int slope, int circleDiameter) {
 		int state = SEARCH_LEFT_EDGE;
 		for (int i=top; i>bottom; i++) {
-			
+			state = SEARCH_LEFT_EDGE;
 			for (int x=0; x<width; x++) {
 				int y = (int) (Math.round((double)x*slope) + Math.round(i));
 		    	y = -y;
