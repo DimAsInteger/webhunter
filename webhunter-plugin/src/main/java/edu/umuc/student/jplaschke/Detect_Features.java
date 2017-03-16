@@ -64,24 +64,25 @@ public class Detect_Features {
 	 * @param image the image (possible multi-dimensional)
 	 */
 	public void process(ImagePlus image, SemInfo semInfo, int startingX, int lineSep,
-			             int xInc, int circleDiameter) {
+			             int xInc, int circleDiameter, double spindleSize) {
 		this.semInfo = semInfo;
 		// slice numbers start with 1 for historical reasons
 		IJ.log("image.getStackSize() "+image.getStackSize()+" circleDiameter="+circleDiameter);
 		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i), startingX, lineSep, xInc, circleDiameter);
+			process(image.getStack().getProcessor(i), startingX, lineSep, xInc, circleDiameter, spindleSize);
 	}
 
 	// Select processing method depending on image type
 	public void process(ImageProcessor ip, int startingX, int lineSep, int xInc,
-			               int circleDiameter) {
+			               int circleDiameter,  double spindleSize) {
 		int type = image.getType();
 		width = ip.getWidth();
 		height = ip.getHeight();
 		lines = new Lines(10);
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
-			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc, circleDiameter );
+			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc, 
+					                 circleDiameter, spindleSize );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -90,7 +91,7 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc, int circleDiameter) {
+	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc, int circleDiameter,  double spindleSize) {
 		
 		int state;  
 		int lineNum = 0;
@@ -204,7 +205,7 @@ public class Detect_Features {
 							
 						}
 						// determine thickness based on scale -TODO
-						int maxThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.8);
+						int maxThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*spindleSize);
 						int minThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.2);
 						//IJ.log("max "+maxThickness+" min "+minThickness);
 						if ((thickness >= minThickness) && (thickness <= maxThickness)) {
@@ -327,7 +328,7 @@ public class Detect_Features {
 					    	   pixels[i + (y+1) * width] = (byte)255;			   
 					    	} catch (Exception e) {
 					    		//IJ.log(e.getMessage());
-					    		IJ.log(e.getMessage());
+					    		IJ.log("exception i = "+i+" y="+y);
 					    	}
 			    		} else {
 			    			//IJ.log("LINE ERROR line is not black at x="+i+" y="+y);
