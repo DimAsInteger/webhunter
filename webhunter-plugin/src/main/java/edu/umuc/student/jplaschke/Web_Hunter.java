@@ -46,15 +46,54 @@ public class Web_Hunter implements PlugIn {
 
 	// plugin parameters
 	public double value;
-	public String name;
+	public String filename;
 	
 	//private classes
 	private Simple_Threshold simpleThreshold;
 	private Read_Scale readScale;
 	private Detect_Features detectFeatures;
+
+	// plugin parameters
+	public double threshold;
+	public String name;
+	public double startingX;
+	public double lineSep;
+	public double xInc;
+	public int circleDiameter;
+	public double spindle;
+	
+	private boolean showDialog() {
+		GenericDialog gd = new GenericDialog("Web Hunter Parameters");
+
+		// default value is 0.00, 2 digits right of the decimal point
+		gd.addStringField("name", "Spider1");
+		gd.addNumericField("threshold", 135, 3);
+		gd.addNumericField("startingX", 130, 0);
+		gd.addNumericField("line separation", 5, 0);
+		gd.addNumericField("X increment", 10, 0);
+		gd.addNumericField("circle diameter", 190, 0);
+		gd.addNumericField("spindle thickness", 0.8, 2);
+
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return false;
+
+		// get entered values
+		name = gd.getNextString();
+		threshold = gd.getNextNumber();
+		startingX = gd.getNextNumber();
+		lineSep = gd.getNextNumber();
+		xInc = gd.getNextNumber();
+		circleDiameter = (int)gd.getNextNumber();
+		spindle = gd.getNextNumber();
+		
+		return true;
+	}
+
 	
 	//@Override
 	public int setup(String arg) {
+		int retVal = -1;
 		IJ.showStatus("Starting");
 		if (arg.equals("about")) {
 			showAbout();
@@ -62,84 +101,67 @@ public class Web_Hunter implements PlugIn {
 		}
 		OpenDialog od = new OpenDialog("Select micrograph");
 
-		this.image = IJ.openImage(od.getPath());
-		image.show();
-		    
-	    simpleThreshold = new Simple_Threshold();
-		readScale = new Read_Scale();
-		detectFeatures = new Detect_Features();
-		return 0;
+		if (od.getPath() != null) {
+			this.image = IJ.openImage(od.getPath());
+			image.show();
+			    
+		    simpleThreshold = new Simple_Threshold();
+			readScale = new Read_Scale();
+			detectFeatures = new Detect_Features();
+			retVal = 0;
+		}
+		return retVal;
 	}
 
 	@Override
 	public void run(String arg) {
 		
-		this.setup("");
+		if (this.showDialog()) {
+			if (this.setup("") >= 0) {
+			
+				SemInfo semInfo = new SemInfo();
+				String dir = image.getOriginalFileInfo().directory;
+			    String filename = image.getOriginalFileInfo().fileName;
+			    String fullFname = dir+File.separator+filename;
 		
-		SemInfo semInfo = new SemInfo();
-		String dir = image.getOriginalFileInfo().directory;
-	    String name = image.getOriginalFileInfo().fileName;
-	    String fullFname = dir+File.separator+name;
-
-		// get width and height
-		width = image.getWidth();
-		height = image.getHeight();
-        int bottomHeight = height;
-		// Read scale information
-		//IJ.showMessage("width = "+width+" height = "+height);
-		readScale.setImage(image);
-		IJ.showStatus("Read Scale");
-		readScale.process(image);
-		// set the scale length
-		semInfo.setBarLength(readScale.getScaleWidth());
+				// get width and height
+				width = image.getWidth();
+				height = image.getHeight();
+		        int bottomHeight = height;
+				// Read scale information
+				//IJ.showMessage("width = "+width+" height = "+height);
+				readScale.setImage(image);
+				IJ.showStatus("Read Scale");
+				readScale.process(image);
+				// set the scale length
+				semInfo.setBarLength(readScale.getScaleWidth());
+				
+				image = readScale.getImage();
+				// Basic thresholding 
+				height = readScale.getSemHeight();
+			    
+			    IJ.log("fullname = "+fullFname);
+			    semInfo.readSemInfo(fullFname, width, height, bottomHeight);
+				IJ.showStatus("Threshold image");
+			    simpleThreshold.setImage(image);  
+				simpleThreshold.setHeight(height);
+				image = simpleThreshold.process(image, (int)Math.round(threshold));
 		
-		image = readScale.getImage();
-		// Basic thresholding 
-		height = readScale.getSemHeight();
-	    
-	    IJ.log("fullname = "+fullFname);
-	    semInfo.readSemInfo(fullFname, width, height, bottomHeight);
-		IJ.showStatus("Threshold image");
-	    simpleThreshold.setImage(image);  
-		simpleThreshold.setHeight(height);
-		image = simpleThreshold.process(image);
-
-		IJ.showStatus("Detecting features");
-		// Feature detection
-		detectFeatures.setImage(image);
-		detectFeatures.setHeight(height);
-		detectFeatures.process(image, semInfo, (int)simpleThreshold.startingX,
-				(int)simpleThreshold.lineSep, (int)simpleThreshold.xInc,
-				simpleThreshold.circleDiameter, simpleThreshold.spindle);
-		
-		// Display results
-		//process(ip);
-		image.updateAndDraw();
-		
+				IJ.showStatus("Detecting features");
+				// Feature detection
+				detectFeatures.setImage(image);
+				detectFeatures.setHeight(height);
+				detectFeatures.process(image, semInfo, (int)startingX,
+						(int)lineSep, (int)xInc,
+						circleDiameter, spindle);
+				
+				// Display results
+				//process(ip);
+				image.updateAndDraw();
+			}
+		}		
 	}
 
-	// Delaram:  Create a dialog to have the user enter a typical line 
-	//      thickness and droplet diameter
-	//      Add the tarantula name or ID of the spider
-	//  If you cannot get the scale write a dialog to input magnification 
-	//  and scale value, e.g. 10um
-	private boolean showDialog() {
-		GenericDialog gd = new GenericDialog("Process pixels");
-
-		// default value is 0.00, 2 digits right of the decimal point
-		gd.addNumericField("value", 0.00, 2);
-		gd.addStringField("name", "test");
-
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return false;
-
-		// get entered values
-		value = gd.getNextNumber();
-		name = gd.getNextString();
-
-		return true;
-	}
 
 	public void showAbout() {
 		IJ.showMessage("WebHunter",

@@ -29,43 +29,6 @@ public class Simple_Threshold  {
 	private int width;
 	private int height;
 
-	// plugin parameters
-	public double threshold;
-	public String name;
-	public double startingX;
-	public double lineSep;
-	public double xInc;
-	public int circleDiameter;
-	public double spindle;
-	
-	private boolean showDialog() {
-		GenericDialog gd = new GenericDialog("Web Hunter Parameters");
-
-		// default value is 0.00, 2 digits right of the decimal point
-		gd.addStringField("name", "Spider1");
-		gd.addNumericField("threshold", 135, 3);
-		gd.addNumericField("startingX", 130, 0);
-		gd.addNumericField("line separation", 5, 0);
-		gd.addNumericField("X increment", 10, 0);
-		gd.addNumericField("circle diameter", 190, 0);
-		gd.addNumericField("spindle thickness", 0.8, 2);
-
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return false;
-
-		// get entered values
-		name = gd.getNextString();
-		threshold = gd.getNextNumber();
-		startingX = gd.getNextNumber();
-		lineSep = gd.getNextNumber();
-		xInc = gd.getNextNumber();
-		circleDiameter = (int)gd.getNextNumber();
-		spindle = gd.getNextNumber();
-		
-		return true;
-	}
-
 	public ImagePlus getImage() {
 		return image;
 	}
@@ -89,24 +52,24 @@ public class Simple_Threshold  {
 	 *
 	 * @param image the image (possible multi-dimensional)
 	 */
-	public ImagePlus process(ImagePlus image) {
-		if (showDialog()) {
+	public ImagePlus process(ImagePlus image, int threshold) {
+		//if (showDialog()) {
 		// slice numbers start with 1 for historical reasons
 			for (int i = 1; i <= image.getStackSize(); i++) {
-				ImageProcessor ip = process(image.getStack().getProcessor(i));
+				ImageProcessor ip = process(image.getStack().getProcessor(i), threshold);
 				image.getStack().setProcessor(ip, i);
 			}
-		}
+		//}
 		return image;
 	}
 
 	// Select processing method depending on image type
-	public ImageProcessor process(ImageProcessor ip) {
+	public ImageProcessor process(ImageProcessor ip, int threshold) {
 		width = ip.getWidth();
 		
 		int type = image.getType();
 		if (type == ImagePlus.GRAY8) {
-			byte[] pixels =  process( (byte[]) ip.getPixels() );
+			byte[] pixels =  process( (byte[]) ip.getPixels(), threshold );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -116,7 +79,7 @@ public class Simple_Threshold  {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels) {
+	public byte[] process(byte[] pixels, int threshold) {
 		
 		IJ.log("height = "+height+" width = "+width);
 		for (int x=0; x < width; x++) {
