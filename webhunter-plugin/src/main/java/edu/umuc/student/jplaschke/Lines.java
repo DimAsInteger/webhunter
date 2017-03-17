@@ -3,6 +3,7 @@ package edu.umuc.student.jplaschke;
 import ij.IJ;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Data structure for lines
@@ -169,5 +170,41 @@ public class Lines {
 		EquationOfLines = equationOfLines;
 	}
 	
+	
+	// TODO: Delaram fill this out
+    public void createLineReport() {
+    	
+    	// Write report header
+    	// write number of lines
+    	// write line info
+    	for (LineInfo li : EquationOfLines) {
+    		
+    	}
+    }
 
+	public static void main(String[] args) {
+         // Create a number of fake lines
+         int width = 5000;
+         int height = 4000;
+         int numLines;
+         Random rand = new Random();
+         numLines = rand.nextInt(5) + 10;
+         ArrayList<LineInfo> equationOfLines = new ArrayList<LineInfo>(numLines);
+         Lines lines = new Lines(numLines);
+         
+         for (int i=0; i<numLines; i++) {
+        	 LineInfo lineInfo = new LineInfo(0, 0, 0, false);
+        	 lineInfo.setSlope(1.0 - (double)(rand.nextInt(2)/rand.nextInt(4)));
+        	 lineInfo.setyIntercept(0-rand.nextInt(height));
+        	 lineInfo.setThickness(16-rand.nextInt(8));
+        	 lineInfo.setAggregate(rand.nextInt(10)<9 ? false : true);
+        	 equationOfLines.add(lineInfo);
+         }
+         lines.setEquationOfLines(equationOfLines); 
+         
+         // Line report
+         lines.createLineReport();
+         
+	}
+	
 }

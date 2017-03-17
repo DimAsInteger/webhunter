@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Random;
 
 import edu.umuc.student.jplaschke.CircleFitter.LocalException;
 
@@ -205,5 +206,41 @@ public class Circles {
 		ListofCircles = listofCircles;
 	} 
 		
-
+	// TODO: William fill this out
+    public void createCircleReport() {
+    	
+    	// Write report header
+    	// write number of circles
+    	// write circle info
+    	for (CircleInfo ci : ListofCircles) {
+    		
+    	}
+    }
+	
+	public static void main(String[] args) {
+         // Create a number of fake circles
+         int width = 5000;
+         int height = 4000;
+         int numCircles;
+         Random rand = new Random();
+         numCircles = rand.nextInt(40) + 10;
+         Circles circle = new Circles(numCircles);
+         
+         // create random circles
+         ArrayList<CircleInfo> ListofCircles = new ArrayList<CircleInfo>(numCircles);
+         for (int i=0; i<numCircles; i++) {
+        	 CircleInfo circleInfo = new CircleInfo(0, 0, 0, false);
+        	 circleInfo.setRadius(rand.nextInt(150)+30);
+        	 circleInfo.setX(rand.nextInt(width));
+        	 circleInfo.setY(rand.nextInt(height));
+        	 circleInfo.setAggregate(rand.nextInt(10)<9 ? false : true);
+        	 ListofCircles.add(circleInfo);
+         }
+         circle.setListofCircles(ListofCircles);
+         circle.setCircleCount(numCircles);
+         
+         // Create report
+         circle.createCircleReport();
+         
+	}
 }
