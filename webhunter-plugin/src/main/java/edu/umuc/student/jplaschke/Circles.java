@@ -22,8 +22,8 @@ public class Circles {
 	private final int SEARCH_LEFT_EDGE = 0;
 	private final int SEARCH_RIGHT_EDGE = 1;
 	private int circleCount = 0;
-	private ArrayList<CircleInfo> ListofCircles;
 	private ArrayList<ArrayList<LinePoint>> allCirclePoints;
+	private ArrayList<CircleInfo> ListofCircles;
 	
 	public Circles(int size) {
 		allCirclePoints = new ArrayList<ArrayList<LinePoint>>();
@@ -81,6 +81,7 @@ public class Circles {
 	    		   
 	    		   if (r < diam) {
 	    			   CircleInfo ci = new CircleInfo(x, y, r, false);
+	    			   ci.setCircleNum(ListofCircles.size()+1);
 	    			   ListofCircles.add(ci);
 	    		   }
 	    	   } catch (LocalException e) {
@@ -198,13 +199,6 @@ public class Circles {
 		this.circleCount = circleCount;
 	}
 
-	public ArrayList<CircleInfo> getListofCircles() {
-		return ListofCircles;
-	}
-
-	public void setListofCircles(ArrayList<CircleInfo> listofCircles) {
-		ListofCircles = listofCircles;
-	} 
 		
 	// TODO: William fill this out
     public void createCircleReport() {
@@ -217,6 +211,15 @@ public class Circles {
     	}
     }
 	
+	
+	public ArrayList<CircleInfo> getListofCircles() {
+		return ListofCircles;
+	}
+
+	public void setListofCircles(ArrayList<CircleInfo> listofCircles) {
+		ListofCircles = listofCircles;
+	}
+
 	public static void main(String[] args) {
          // Create a number of fake circles
          int width = 5000;
@@ -227,16 +230,15 @@ public class Circles {
          Circles circle = new Circles(numCircles);
          
          // create random circles
-         ArrayList<CircleInfo> ListofCircles = new ArrayList<CircleInfo>(numCircles);
+         ArrayList<CircleInfo> ListOfCircles = circle.ListofCircles;
          for (int i=0; i<numCircles; i++) {
         	 CircleInfo circleInfo = new CircleInfo(0, 0, 0, false);
         	 circleInfo.setRadius(rand.nextInt(150)+30);
         	 circleInfo.setX(rand.nextInt(width));
         	 circleInfo.setY(rand.nextInt(height));
         	 circleInfo.setAggregate(rand.nextInt(10)<9 ? false : true);
-        	 ListofCircles.add(circleInfo);
+        	 ListOfCircles.add(circleInfo);
          }
-         circle.setListofCircles(ListofCircles);
          circle.setCircleCount(numCircles);
          
          // Create report

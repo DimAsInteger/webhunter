@@ -281,6 +281,16 @@ public class Detect_Features {
 			ovalRoi.drawPixels(this.image.getProcessor());
 			image.setOverlay(overlay);
 			overlay.add(ovalRoi);
+			
+			Font font = new Font("SansSerif", Font.PLAIN, 86);
+			TextRoi roi = new TextRoi(ci.getX()-ci.getRadius()*2, ci.getY()-ci.getRadius()*2, 
+					              String.valueOf(ci.getCircleNum()), font); 
+		    roi.setStrokeColor(Color.white); 
+			roi.setNonScalable(true); 
+			
+			image.setOverlay(overlay);
+			overlay.add(roi);
+			
 	
 		}
 		ImagePlus i2 = image.flatten();
@@ -306,7 +316,7 @@ public class Detect_Features {
 			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" "+IJ.micronSymbol+"m";
 				Font font = new Font("SansSerif", Font.PLAIN, 86);
 				if (y/2 == 0) {
-					separateY = -50;
+					separateY = -150;
 				} else {
 					separateY = 150;
 				}

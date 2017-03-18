@@ -3,6 +3,7 @@ package edu.umuc.student.jplaschke;
 public class CircleInfo {
 
 	// Center
+	private int circleNum;
 	private int x;
 	private int y;
 	private int radius;
@@ -45,5 +46,13 @@ public class CircleInfo {
 
 	public void setAggregate(boolean aggregate) {
 		this.aggregate = aggregate;
+	}
+
+	public int getCircleNum() {
+		return circleNum;
+	}
+
+	public void setCircleNum(int circleNum) {
+		this.circleNum = circleNum;
 	}
 }
