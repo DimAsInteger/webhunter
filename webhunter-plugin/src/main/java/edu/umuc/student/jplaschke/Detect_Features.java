@@ -34,8 +34,6 @@ public class Detect_Features {
 	private final int COUNT_SEPARATION = 3;
 	private final int BOTTOM_EDGE_FOUND = 4;
 	
-	protected ImagePlus image;
-
 	// image property members
 	private int width;
 	private int height;
@@ -48,6 +46,10 @@ public class Detect_Features {
 	private Circles circles;
 	
 	private SemInfo semInfo;
+	private CreateHtmlReport createHtmlReport;
+	private ImagePlus dropletImage;
+	private ImagePlus lineImage;
+	protected ImagePlus image;
 
 	/**
 	 * <p>
@@ -64,25 +66,27 @@ public class Detect_Features {
 	 * @param image the image (possible multi-dimensional)
 	 */
 	public void process(ImagePlus image, SemInfo semInfo, int startingX, int lineSep,
-			             int xInc, int circleDiameter, double spindleSize) {
+			             int xInc, int circleDiameter, double spindleSize, String fname) {
 		this.semInfo = semInfo;
+		this.image = image;
 		// slice numbers start with 1 for historical reasons
 		IJ.log("image.getStackSize() "+image.getStackSize()+" circleDiameter="+circleDiameter);
 		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i), startingX, lineSep, xInc, circleDiameter, spindleSize);
+			process(image.getStack().getProcessor(i), startingX, lineSep, xInc, 
+					 circleDiameter, spindleSize, fname);
 	}
 
 	// Select processing method depending on image type
 	public void process(ImageProcessor ip, int startingX, int lineSep, int xInc,
-			               int circleDiameter,  double spindleSize) {
+			               int circleDiameter,  double spindleSize, String fname) {
 		int type = image.getType();
 		width = ip.getWidth();
-		height = ip.getHeight();
+	//	height = ip.getHeight();
 		lines = new Lines(10);
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
 			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc, 
-					                 circleDiameter, spindleSize );
+					                 circleDiameter, spindleSize, fname );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -91,16 +95,20 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc, int circleDiameter,  double spindleSize) {
+	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc, 
+			                 int circleDiameter,  double spindleSize, String fname) {
 		
 		int state;  
 		int lineNum = 0;
 		
 		IJ.log("Start detect features");
-		// Use a state machine to detect the top endge and bottom edge
+		// Use a state machine to detect the top edge and bottom edge
 		// a-priori knowledge of line thickness and droplet radius will be used
 		// as a simplified template matching
-		for (int x=startingX; x < width; x+= xInc) {
+		int x = startingX;
+		boolean done = false;
+		//for (int x=startingX; x <= width; x+= xInc) {
+		while (!done) {
 			state = LOOK_FOR_TOP_BG;
 			int topY = -1;
 			int bottomY = -1;
@@ -177,8 +185,7 @@ public class Detect_Features {
 					// This means the edge is likely not in a circle
 				    case COUNT_SEPARATION:
 				    	if ((int)(pixels[x + y * width]&0xFF) == (int)80) {
-							++curRunBlack;
-							
+							++curRunBlack;						
 						}
 				    	if ((int)(pixels[x + y * width]&0xFF) == (int)10) {
 							if (curRunBlack >= lineSep) {
@@ -214,11 +221,20 @@ public class Detect_Features {
 							LinePoint lp = new LinePoint(x, topY+halfThickness, thickness, false);
 							if (x==startingX) {
 								lines.addPointToLine(lineNum, lp);
+								lp = new LinePoint(x, topY, thickness, false);
+								lines.addPointToClosestLine(lp);
+								lp = new LinePoint(x, bottomY, thickness, false);
+								lines.addPointToClosestLine(lp);
+								
 								++lineNum;
 							} else {
 								lines.addPointToClosestLine(lp);
+								lp = new LinePoint(x, topY, thickness, false);
+								lines.addPointToClosestLine(lp);
+								lp = new LinePoint(x, bottomY, thickness, false);
+								lines.addPointToClosestLine(lp);
 							}
-						} else if (thickness >= maxThickness*2) {
+						} else if (thickness >= (int)Math.round((double)circleDiameter/4.0)) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp, circleDiameter);
@@ -234,8 +250,16 @@ public class Detect_Features {
 				}
 				
 			}
-			
-		}
+			// Make sure that last horizontal line of the micrograph is scanned
+			if (x == width-1) {
+				done = true;
+			}
+			else if (x > width) {
+				x = width-1;
+			} else {
+				x += xInc;		
+			}
+		} // while !done
 		lines.CalculateLinearReqressions();
 		
 		// look for circles
@@ -245,7 +269,10 @@ public class Detect_Features {
 		image.getProcessor().setPixels((Object)pixels);
 
 		// draw the lines in white
-		pixels = this.drawLinesInWhite(pixels);
+		pixels = this.drawLinesInWhite(pixels, startingX);
+		
+		this.createHtmlReport = new CreateHtmlReport(image.getFileInfo().fileName);
+		this.createHtmlReport.createWebHunterReport(image, this.lineImage, this.dropletImage);
 		
 		return (pixels);
 	}
@@ -293,12 +320,12 @@ public class Detect_Features {
 			
 	
 		}
-		ImagePlus i2 = image.flatten();
-		i2.show();
+		this.dropletImage = image.flatten();
+		this.dropletImage.show();
 		return (byte[])image.getProcessor().getPixels();
 	}
 	
-	private byte[] drawLinesInWhite(byte[] pixels) {
+	private byte[] drawLinesInWhite(byte[] pixels, int startingX) {
 		int LineNum = 1;
 	    Overlay overlay = new Overlay();
 	    TextRoi roi = null;
@@ -308,20 +335,20 @@ public class Detect_Features {
 		        
 			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
+		    	int y = (int) (Math.round((double)startingX*li.slope) + Math.round(li.yIntercept));
+		    	y = -y;
 
-				int y = (int) (Math.round((double)100*li.slope) + Math.round(li.yIntercept));
-			    y = -y;
 			    NumberFormat formatter = new DecimalFormat("#0.000");     
 			    String text = "Line "+LineNum+" thickness = "
 			        +formatter.format(semInfo.getMicronLength(li.getThickness()))+" "+IJ.micronSymbol+"m";
 				Font font = new Font("SansSerif", Font.PLAIN, 86);
-				if (y/2 == 0) {
-					separateY = -150;
+				if (LineNum/2 == 0) {
+					separateY = 50;
 				} else {
-					separateY = 150;
+					separateY = -50;
 				}
 				
-			    roi = new TextRoi(100, y-separateY, text, font); 
+			    roi = new TextRoi(startingX, y-separateY, text, font); 
 			    roi.setStrokeColor(Color.white); 
 				roi.setNonScalable(true); 
 				
@@ -348,8 +375,8 @@ public class Detect_Features {
 				++LineNum;
 			}
 		}
-	    ImagePlus i2 = image.flatten();
-		i2.show();
+	    this.lineImage = image.flatten();
+		this.lineImage.show();
 		image.show();
 		 	
 		return pixels;

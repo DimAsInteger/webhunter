@@ -70,7 +70,7 @@ public class Circles {
 	    	   try {
 	    		   fitter.initialize(points);
 	    		   // minimize the residuals
-	    		   //int iter = fitter.minimize(100, 0.1, 1.0e-12);
+	    		   int iter = fitter.minimize(100, 0.1, 1.0e-12);
 	    		   IJ.log("converged circle: x="
  	                      + format.format(fitter.getCenter().x)
  	                      + " x="     + format.format(fitter.getCenter().y)
@@ -98,7 +98,7 @@ public class Circles {
 	// TODO: Chris - fill this is
 	// Use this to find circles
 	public void findCircles(Lines circles, byte[] pixels, int width, int height, int circleDiameter) {
-		
+				
 		for (LineInfo li : circles.getEquationOfLines()) {
 			//IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
@@ -112,12 +112,12 @@ public class Circles {
 			    		// look at lines parallel - above and below the line to 
 			    		// find runs of white (value > x)?
 			    		//(pixels[x + y * width]&0xFF)
-			    		// Look for 45 pixels above the line
-			    		int halfDiam = (int)Math.round((double)circleDiameter / 2.0);
+			    		// Look for halfDiam pixels above the line
+			    		int halfDiam = (int)Math.round((double)circleDiameter); // / 2.0);
 			    		searchCirclesHorizontalDir(pixels, positiveYintercept-halfDiam, positiveYintercept-2, width, 
 			    				(int)Math.round(li.slope), circleDiameter);
 			    		
-			    		//Look for 45 pixels below the line
+			    		//Look for halfDiam pixels below the line
 			    		searchCirclesHorizontalDir(pixels, positiveYintercept+2, positiveYintercept+halfDiam, width, 
 			    				                     (int)Math.round(li.slope),circleDiameter);
 			    		
@@ -176,7 +176,7 @@ public class Circles {
 			    if (possibleCircle != null) {
 				    for (LinePoint point : possibleCircle) {
 						dist = Math.sqrt(Math.pow((point.x-cp.x),2)+Math.pow(point.y-cp.y,2));
-						if (dist < circleDiameter) { // change to configurable parm 
+						if (dist < circleDiameter) { 
 							cirNumToAddTo = possibleCircle;
 						} 				
 				   }

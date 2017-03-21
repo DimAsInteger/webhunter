@@ -215,7 +215,7 @@ private Point2D.Double circumcenter(Point2D.Double pI,
 
  // determinant of the linear system: 0 for aligned points
  double det = dJK.x * dIJ.y - dIJ.x * dJK.y;
- if (Math.abs(det) < 1.0e-10) {
+ if (Math.abs(det) < 1.0e-5) {
    // points are almost aligned, we cannot compute the circumcenter
    return null;
  }

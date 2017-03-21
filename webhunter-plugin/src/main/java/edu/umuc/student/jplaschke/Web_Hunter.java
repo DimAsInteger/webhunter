@@ -59,7 +59,8 @@ public class Web_Hunter implements PlugIn {
 	public double startingX;
 	public double lineSep;
 	public double xInc;
-	public int circleDiameter;
+	public int circleDiameter;  //pixels
+	
 	public double spindle;
 	
 	private boolean showDialog() {
@@ -153,7 +154,7 @@ public class Web_Hunter implements PlugIn {
 				detectFeatures.setHeight(height);
 				detectFeatures.process(image, semInfo, (int)startingX,
 						(int)lineSep, (int)xInc,
-						circleDiameter, spindle);
+						circleDiameter, spindle, filename);
 				
 				// Display results
 				//process(ip);

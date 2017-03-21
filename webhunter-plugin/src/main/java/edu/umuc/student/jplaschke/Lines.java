@@ -62,14 +62,14 @@ public class Lines {
 		
 		// TODO - what if lines cross?
 		//        what if a new line starts from x>20,y=0
-		// NOTE: 10 is the slice thickness
 		lp.y=-lp.y;
         LinePoint cp = null;  // for debug - closest point
         double dist = 10000;
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			for (LinePoint point: line) {
 				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
-				if ((dist < minDistance) && (dist < (minSeparation))) {
+				// TODO: rethink use of minSeparation
+				if ((dist < minDistance)) { // && (dist < (minSeparation))) {
 						minDistance = dist;
 						lineNumToAddTo = line;  
 						cp = point;
@@ -152,11 +152,10 @@ public class Lines {
 			}
 			// If standard error is less than 4? it is a line
 			// if it is greater than the line contains a circle??? maybe
-			if (Math.sqrt(svar0) < 30) {
-			    EquationOfLines.add(tmp);
-			}
-			if (Double.isNaN(svar0)) {
-				 EquationOfLines.add(tmp);		
+			if (!Double.isNaN(svar0)) {		
+				if (Math.sqrt(svar0) < 30) {   //TODO think this over
+			       EquationOfLines.add(tmp);
+				}
 			}
 			
 		}

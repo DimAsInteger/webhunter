@@ -98,6 +98,24 @@
     	<artifactId>java-ocr-api</artifactId>
     	<version>15.3.0.3</version>
 	</dependency>
+	<!-- https://mvnrepository.com/artifact/commons-primitives/commons-primitives -->
+	<dependency>
+    	<groupId>commons-primitives</groupId>
+    	<artifactId>commons-primitives</artifactId>
+    	<version>1.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/colt/colt -->
+	<dependency>
+	    <groupId>colt</groupId>
+	    <artifactId>colt</artifactId>
+	    <version>1.2.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/net.sf.jsci/jsci -->
+	<dependency>
+	    <groupId>net.sf.jsci</groupId>
+	    <artifactId>jsci</artifactId>
+	    <version>1.2</version>
+	</dependency>
 
 	</dependencies>
 </project>
