@@ -119,7 +119,7 @@ public class Web_Hunter implements PlugIn {
 		
 		if (this.showDialog()) {
 			if (this.setup("") >= 0) {
-			
+			    ImagePlus origImage = image.duplicate();
 				SemInfo semInfo = new SemInfo();
 				String dir = image.getOriginalFileInfo().directory;
 			    String filename = image.getOriginalFileInfo().fileName;
@@ -151,6 +151,7 @@ public class Web_Hunter implements PlugIn {
 				IJ.showStatus("Detecting features");
 				// Feature detection
 				detectFeatures.setImage(image);
+				detectFeatures.setOrigImage(origImage);
 				detectFeatures.setHeight(height);
 				detectFeatures.process(image, semInfo, (int)startingX,
 						(int)lineSep, (int)xInc,

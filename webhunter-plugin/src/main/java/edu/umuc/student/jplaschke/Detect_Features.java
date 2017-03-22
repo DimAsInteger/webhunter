@@ -50,6 +50,7 @@ public class Detect_Features {
 	private ImagePlus dropletImage;
 	private ImagePlus lineImage;
 	protected ImagePlus image;
+	private ImagePlus origImage;
 
 	/**
 	 * <p>
@@ -271,8 +272,8 @@ public class Detect_Features {
 		// draw the lines in white
 		pixels = this.drawLinesInWhite(pixels, startingX);
 		
-		this.createHtmlReport = new CreateHtmlReport(image.getFileInfo().fileName);
-		this.createHtmlReport.createWebHunterReport(image, this.lineImage, this.dropletImage);
+		this.createHtmlReport = new CreateHtmlReport(origImage.getFileInfo().fileName);
+		this.createHtmlReport.createWebHunterReport(origImage, this.lineImage, this.dropletImage);
 		
 		return (pixels);
 	}
@@ -299,6 +300,14 @@ public class Detect_Features {
 		this.height = height;
 	}
 	
+	public ImagePlus getOrigImage() {
+		return origImage;
+	}
+
+	public void setOrigImage(ImagePlus origImage) {
+		this.origImage = origImage;
+	}
+
 	private byte[] drawCircles() {
 		Overlay overlay = new Overlay();
 		for (CircleInfo ci : circles.getListofCircles()) {
@@ -361,8 +370,10 @@ public class Detect_Features {
 			    	if ((y < height) && (y > 0))  {
 			    		if (true) { //((int)(pixels[i + y * width]&0xFF) == (int)10) {
 					    	try {
+					    	   pixels[i + (y-1) * width] = (byte)255;	 	
 					    	   pixels[i + y * width] = (byte)255;				     
-					    	   pixels[i + (y+1) * width] = (byte)255;			   
+					    	   pixels[i + (y+1) * width] = (byte)255;	
+					    	   pixels[i + (y+2) * width] = (byte)255;			   
 					    	} catch (Exception e) {
 					    		//IJ.log(e.getMessage());
 					    		IJ.log("exception i = "+i+" y="+y);
