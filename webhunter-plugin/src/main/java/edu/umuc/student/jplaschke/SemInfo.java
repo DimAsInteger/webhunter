@@ -45,7 +45,7 @@ public class SemInfo {
         }
 
 	}
-	
+	// um / pixels
 	public double pixelLengthinMicrons() {
 		return  (double)this.scale / (double)this.barLength;
 	}
@@ -55,13 +55,12 @@ public class SemInfo {
 	}
 	
 	public double getMicronLength(int lenPixels) {
-	    return pixelLengthinMicrons()*(double)lenPixels;
+	    return (double)lenPixels * pixelLengthinMicrons();
 	}
 	
 	public double getMicronLength(double lenPixels) {
-	    return pixelLengthinMicrons()*lenPixels;
-	}
-	
+	    return lenPixels * pixelLengthinMicrons();
+	}	
 	public int getScale() {
 		return scale;
 	}

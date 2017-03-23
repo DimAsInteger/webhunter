@@ -443,8 +443,11 @@ public class Detect_Features {
     		IJ.log("p1 "+p1.x+","+p1.y);
     		IJ.log("p2 "+p2.x+","+p2.y);
     		double spindleLen = Math.sqrt(Math.pow((p1.x-p2.x),2)+Math.pow(p1.y-p2.y,2));   		
-    	    LineInfo li = lines.getEquationOfLines().get(i);
-    	    areas[i] = semInfo.getMicronLength(spindleLen * li.getThickness());
+    		IJ.log("spindleLen "+spindleLen);    		
+    		LineInfo li = lines.getEquationOfLines().get(i);
+    	IJ.log("li.getThickness() "+li.getThickness());
+    		
+    	    areas[i] = semInfo.getMicronLength(spindleLen) * semInfo.getMicronLength(li.getThickness());
     		IJ.log("area "+i+" = "+areas[i]);
     		++i;
     	}
