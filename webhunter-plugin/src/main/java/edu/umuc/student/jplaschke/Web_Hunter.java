@@ -72,8 +72,8 @@ public class Web_Hunter implements PlugIn {
 		gd.addNumericField("startingX", 130, 0);
 		gd.addNumericField("line separation", 5, 0);
 		gd.addNumericField("X increment", 10, 0);
-		gd.addNumericField("circle diameter", 190, 0);
-		gd.addNumericField("spindle thickness", 0.8, 2);
+		gd.addNumericField("max circle diameter (microns)", 7, 0);
+		gd.addNumericField("max spindle thickness (microns)", 0.8, 2);
 
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -153,7 +153,7 @@ public class Web_Hunter implements PlugIn {
 				detectFeatures.setImage(image);
 				detectFeatures.setOrigImage(origImage);
 				detectFeatures.setHeight(height);
-				detectFeatures.process(image, semInfo, (int)startingX,
+				detectFeatures.process(image, semInfo, (int)threshold, (int)startingX,
 						(int)lineSep, (int)xInc,
 						circleDiameter, spindle, filename);
 				

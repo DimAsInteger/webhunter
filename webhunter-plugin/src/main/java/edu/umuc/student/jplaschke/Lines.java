@@ -5,6 +5,8 @@ import ij.IJ;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 /**
  * Data structure for lines
  * 
@@ -14,6 +16,7 @@ import java.util.Random;
 public class Lines {
 	
 	private ArrayList<ArrayList<LinePoint>> ListOfLines;
+
 	private int lineCount = 0;
 	private ArrayList<LineInfo> EquationOfLines;
 	private int prevY = 0;
@@ -22,6 +25,7 @@ public class Lines {
 	public Lines(int size) {
 		ListOfLines = new ArrayList<ArrayList<LinePoint>>();
 		ListOfLines.ensureCapacity(size);
+	
 		EquationOfLines = new ArrayList<LineInfo>(size);
 	}
 	
@@ -86,6 +90,37 @@ public class Lines {
 	
  	}
 	
+	double[] calcThicknessStats() {
+		double[] thickness = new double[this.EquationOfLines.size()];
+		int i=0;
+		for (LineInfo li : this.EquationOfLines) {
+			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
+				thickness[i] = (double)li.getThickness();
+				IJ.log("thickness = "+thickness[i]);
+				i++;
+			}
+		}
+			
+		return calcStatistics(thickness);
+	}
+	
+	double[] calcStatistics(double[] values) {
+		double[] stats = {0,0,0,0};
+		DescriptiveStatistics statslib = new DescriptiveStatistics();
+
+		// Add the data from the array
+		for( int i = 0; i < values.length; i++) {
+		        statslib.addValue(values[i]);
+		}
+
+		// Compute some statistics
+		stats[0] = statslib.getMin();
+		stats[1] = statslib.getMax();
+		stats[2] = statslib.getMean();
+		stats[3] = statslib.getStandardDeviation();
+
+		return stats; // min, max, mean, standard deviation
+	}
 		
 	// Calculate linear regression for a line to get y=mx+b
 	public void CalculateLinearReqressions() {

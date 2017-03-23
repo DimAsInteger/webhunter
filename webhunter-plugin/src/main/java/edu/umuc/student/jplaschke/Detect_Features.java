@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -51,6 +52,9 @@ public class Detect_Features {
 	private ImagePlus lineImage;
 	protected ImagePlus image;
 	private ImagePlus origImage;
+	
+	// used to store end points to detect lengths
+	private ArrayList<ArrayList<LinePoint>> LinesEndPoints; 
 
 	/**
 	 * <p>
@@ -66,28 +70,28 @@ public class Detect_Features {
 	 *
 	 * @param image the image (possible multi-dimensional)
 	 */
-	public void process(ImagePlus image, SemInfo semInfo, int startingX, int lineSep,
+	public void process(ImagePlus image, SemInfo semInfo, int threshold, int startingX, int lineSep,
 			             int xInc, int circleDiameter, double spindleSize, String fname) {
 		this.semInfo = semInfo;
 		this.image = image;
 		// slice numbers start with 1 for historical reasons
 		IJ.log("image.getStackSize() "+image.getStackSize()+" circleDiameter="+circleDiameter);
 		for (int i = 1; i <= image.getStackSize(); i++)
-			process(image.getStack().getProcessor(i), startingX, lineSep, xInc, 
+			process(image.getStack().getProcessor(i), threshold, startingX, lineSep, xInc, 
 					 circleDiameter, spindleSize, fname);
 	}
 
 	// Select processing method depending on image type
-	public void process(ImageProcessor ip, int startingX, int lineSep, int xInc,
-			               int circleDiameter,  double spindleSize, String fname) {
+	public void process(ImageProcessor ip, int threshold, int startingX, int lineSep, int xInc,
+			               int circleDiameterMicrons,  double spindleSize, String fname) {
 		int type = image.getType();
 		width = ip.getWidth();
 	//	height = ip.getHeight();
 		lines = new Lines(10);
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
-			byte[] pixels = process( (byte[]) ip.getPixels(), startingX, lineSep, xInc, 
-					                 circleDiameter, spindleSize, fname );
+			byte[] pixels = process( (byte[]) ip.getPixels(), threshold, startingX, lineSep, xInc, 
+					circleDiameterMicrons, spindleSize, fname );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -96,11 +100,12 @@ public class Detect_Features {
 	}
 
 	// processing of GRAY8 images
-	public byte[] process(byte[] pixels, int startingX, int lineSep, int xInc, 
-			                 int circleDiameter,  double spindleSize, String fname) {
+	public byte[] process(byte[] pixels, int threshold, int startingX, int lineSep, int xInc, 
+			                 int circleDiameterMicrons,  double spindleSize, String fname) {
 		
 		int state;  
 		int lineNum = 0;
+		int circleDiameter = 0;
 		
 		IJ.log("Start detect features");
 		// Use a state machine to detect the top edge and bottom edge
@@ -215,6 +220,7 @@ public class Detect_Features {
 						// determine thickness based on scale -TODO
 						int maxThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*spindleSize);
 						int minThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.2);
+						circleDiameter = (int)Math.round(semInfo.numPixelsInOneMicron()*circleDiameterMicrons);
 						//IJ.log("max "+maxThickness+" min "+minThickness);
 						if ((thickness >= minThickness) && (thickness <= maxThickness)) {
 							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
@@ -271,9 +277,11 @@ public class Detect_Features {
 
 		// draw the lines in white
 		pixels = this.drawLinesInWhite(pixels, startingX);
-		
+
 		this.createHtmlReport = new CreateHtmlReport(origImage.getFileInfo().fileName);
-		this.createHtmlReport.createWebHunterReport(origImage, this.lineImage, this.dropletImage);
+		this.createHtmlReport.createWebHunterReport(origImage, this.lineImage, this.dropletImage,
+				  threshold, startingX, lineSep, xInc, circleDiameterMicrons,  spindleSize,
+				  circles, lines, semInfo, this.calcLineArea());
 		
 		return (pixels);
 	}
@@ -339,7 +347,10 @@ public class Detect_Features {
 	    Overlay overlay = new Overlay();
 	    TextRoi roi = null;
 	    int separateY = 0;
-	    
+        // used to calculate spindle area
+	    LinesEndPoints = new ArrayList<ArrayList<LinePoint>>(40);
+	    LinesEndPoints.ensureCapacity(lines.getEquationOfLines().size());
+	
 	    for (LineInfo li : lines.getEquationOfLines()) {
 		        
 			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
@@ -363,11 +374,21 @@ public class Detect_Features {
 				
 				image.setOverlay(overlay);
 				overlay.add(roi);
+				boolean firstPointFound = false;
+				boolean lastPointFound = false;
 				for (int i=0; i<width; i++) {
 			    	y = (int) (Math.round((double)i*li.slope) + Math.round(li.yIntercept));
 			    	y = -y;
 			    
 			    	if ((y < height) && (y > 0))  {
+			    		if (!firstPointFound) {
+			    			firstPointFound = true;
+			    			LinePoint lp = new LinePoint(i,y,li.getThickness(),li.isAggregate());
+			    			ArrayList<LinePoint> tmp = new ArrayList<LinePoint>(2);
+			    			tmp.ensureCapacity(2);
+			    			tmp.add(lp);
+			    			LinesEndPoints.add(tmp);
+			    		}
 			    		if (true) { //((int)(pixels[i + y * width]&0xFF) == (int)10) {
 					    	try {
 					    	   pixels[i + (y-1) * width] = (byte)255;	 	
@@ -381,8 +402,28 @@ public class Detect_Features {
 			    		} else {
 			    			//IJ.log("LINE ERROR line is not black at x="+i+" y="+y);
 			    		}
+				    } else {
+				    	if (!firstPointFound) {
+			    			firstPointFound = true;
+			    			LinePoint lp = new LinePoint(i,y,li.getThickness(),li.isAggregate());
+			    			ArrayList<LinePoint> tmp = new ArrayList<LinePoint>(2);
+			    			tmp.ensureCapacity(2);
+			    			tmp.add(lp);
+			    			LinesEndPoints.add(tmp);
+			    		} else if ((firstPointFound) &&(!lastPointFound)) {
+			    			lastPointFound = true;
+			    			LinePoint lp = new LinePoint(i,y,li.getThickness(),li.isAggregate());
+			    			ArrayList<LinePoint> tmp = LinesEndPoints.get(LineNum-1);
+			    			tmp.add(lp);
+			    		}
 				    }
 				}
+				if ((firstPointFound) &&(!lastPointFound)) {
+	    			lastPointFound = true;
+	    			LinePoint lp = new LinePoint(width,y,li.getThickness(),li.isAggregate());
+	    			ArrayList<LinePoint> tmp = LinesEndPoints.get(LineNum-1);
+	    			tmp.add(lp);
+	    		}
 				++LineNum;
 			}
 		}
@@ -393,31 +434,23 @@ public class Detect_Features {
 		return pixels;
 	}
 	
-
-	/**
-	 * Main method for debugging.
-	 *
-	 * For debugging, it is convenient to have a method that starts ImageJ, loads
-	 * an image and calls the plugin, e.g. after setting breakpoints.
-	 *
-	 * @param args unused
-	 */
-	public static void main(String[] args) {
-		// set the plugins.dir property to make the plugin appear in the Plugins menu
-		Class<?> clazz = Detect_Features.class;
-		String url = clazz.getResource("/" + clazz.getName().replace('.', '/') + ".class").toString();
-		String pluginsDir = url.substring("file:".length(), url.length() - clazz.getName().length() - ".class".length());
-		System.setProperty("plugins.dir", pluginsDir);
-
-		// start ImageJ
-		new ImageJ();
-
-		// open the Clown sample
-		ImagePlus image = IJ.openImage("http://imagej.net/images/clown.jpg");
-		image.show();
-
-		// run the plugin
-		IJ.runPlugIn(clazz.getName(), "");
-	}
-
+    double[] calcLineArea() {
+    	double[] areas = new double[50];
+    	int i=0;
+    	for (ArrayList<LinePoint> lp : this.LinesEndPoints) {
+    		LinePoint p1 = lp.get(0);
+    		LinePoint p2 = lp.get(1);
+    		IJ.log("p1 "+p1.x+","+p1.y);
+    		IJ.log("p2 "+p2.x+","+p2.y);
+    		double spindleLen = Math.sqrt(Math.pow((p1.x-p2.x),2)+Math.pow(p1.y-p2.y,2));   		
+    	    LineInfo li = lines.getEquationOfLines().get(i);
+    	    areas[i] = semInfo.getMicronLength(spindleLen * li.getThickness());
+    		IJ.log("area "+i+" = "+areas[i]);
+    		++i;
+    	}
+    
+    	return areas;
+    }
+    
+	
 }

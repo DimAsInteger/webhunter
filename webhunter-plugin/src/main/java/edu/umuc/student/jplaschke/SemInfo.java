@@ -58,6 +58,10 @@ public class SemInfo {
 	    return pixelLengthinMicrons()*(double)lenPixels;
 	}
 	
+	public double getMicronLength(double lenPixels) {
+	    return pixelLengthinMicrons()*lenPixels;
+	}
+	
 	public int getScale() {
 		return scale;
 	}
