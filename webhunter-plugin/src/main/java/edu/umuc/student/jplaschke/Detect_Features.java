@@ -353,9 +353,9 @@ public class Detect_Features {
 	
 	    for (LineInfo li : lines.getEquationOfLines()) {
 		        
-			IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
-		    	int y = (int) (Math.round((double)startingX*li.slope) + Math.round(li.yIntercept));
+				IJ.log("m = "+li.slope+" y-intercept = "+li.yIntercept);
+				int y = (int) (Math.round((double)startingX*li.slope) + Math.round(li.yIntercept));
 		    	y = -y;
 
 			    NumberFormat formatter = new DecimalFormat("#0.000");     

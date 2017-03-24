@@ -92,7 +92,7 @@ public class CreateHtmlReport {
 			bw = new BufferedWriter(fw);
 			bw.write("<html>");
 			bw.write("<head><style>table { border-collapse: collapse; width: 60%;  border: 1px solid black}"+
-			  "th, td { text-align: left; padding: 8px; border: 1px solid black}"+ "ol { padding-bottom: 6px; }"
+			  "th, td { text-align: left; padding: 8px; border: 1px solid black}"+ "ol { padding-bottom: 8px; }"
 			  + " tr:nth-child(even) {background-color: #f2f2f2}</style><meta charset=\"UTF-8\"></head>");
 			bw.write("<body>");
 			bw.write("<h1>Web Hunter Report</h1>");
@@ -132,30 +132,35 @@ public class CreateHtmlReport {
 			bw.write("</ol>");			
 			bw.write("<h3>Thickness statistics</h3>");
 			double[] stats = lines.calcThicknessStats();
-			bw.write("<table style='width:100%'><tr><th>Parameter Name</th><th>Value</th></tr>");
-            bw.write("<tr><td>Minumum</td><td>"+formatter.format(semInfo.getMicronLength(stats[0]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+			bw.write("<table style='width:100%'>");
+            bw.write("<tr><td>Minimum</td><td>"+formatter.format(semInfo.getMicronLength(stats[0]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("<tr><td>Maximum</td><td>"+formatter.format(semInfo.getMicronLength(stats[1]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("<tr><td>Mean</td><td>"+formatter.format(semInfo.getMicronLength(stats[2]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("<tr><td>Standard Deviation</td><td>"+formatter.format(semInfo.getMicronLength(stats[3]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("</table>");
             bw.write("<h3>Spindle Area Information</h3>");
-			bw.write("<table style='width:100%'><tr><th>Parameter Name</th><th>Value</th></tr>");
+			bw.write("<table style='width:100%'><tr><th>Line Number</th><th>Spindle Area</th></tr>");
             double total = 0;
 			for (int i=0; i<lines.getEquationOfLines().size(); i++) {
 			    bw.write("<tr><td>Line "+i+"</td><td>"+formatter.format(areas[i])+" "+IJ.micronSymbol+"m&sup2;"+"</td></tr>");
 			    total += areas[i];
 			}
-			double percentCov = total/(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))*100.0;
-			bw.write("<h3>Spindle Separation Information</h3>");
-			double[] tmp = lines.calcMinMaxDistance(line.getWidth());
-			for (int i=0;i<tmp.length; i++) {
-				IJ.log("minmax ="+tmp[i]);
-			}
-						
+			double percentCov = total/(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))*100.0;			
 		    bw.write("<tr><td>Total </td><td>"+formatter.format(total)+" "+IJ.micronSymbol+"m&sup2;"+"</td></tr>");
 		    bw.write("<tr><td>Percent Coverage </td><td>"+formatter.format(percentCov)+"%</td></tr>");
 	        bw.write("</table>");            
-            
+	        
+	        bw.write("<h3>Spindle Separation Information</h3>");
+	    	bw.write("<table style='width:100%'><tr><th>Distance between</th><th>Max distance</th><th>Min distance</th></tr>");
+	          
+	        double[] tmp = lines.calcMinMaxDistance(line.getWidth());
+			for (int i=0;i<lines.getEquationOfLines().size()-1; i++) {
+				//IJ.log("minmax ="+tmp[i]);
+			    bw.write("<tr><td>"+(i+1)+" to "+(i+2)+"</td><td>"+formatter.format(tmp[i])+"</td><td>"+
+			    		               formatter.format(tmp[i+1])+"</tr>");
+			}
+	        bw.write("</table>");            
+			
 			bw.write("<h2>Droplet Image</h2>");
 			bw.write("<div style=\"position:relative; height: 100%; width: 100%; top:0;left 0;\">");
 			bw.write("<img src=\"file:///"+dropFname + ".jpg\" style='height: 100%'></div>");

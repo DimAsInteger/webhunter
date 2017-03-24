@@ -55,7 +55,7 @@ public class Lines {
 		if (diff < this.minSeparation) {
 	        	minSeparation = (int)Math.round((double)diff/4.0*3.0);
 	        	this.prevY = lp.y;
-	        	IJ.log("minSep = "+minSeparation);
+	        	//IJ.log("minSep = "+minSeparation);
 	    }
  	} 
 	
@@ -88,7 +88,7 @@ public class Lines {
 		if (lineNumToAddTo != null) {
 	        lineNumToAddTo.add(lp);  
 		} else {
-			IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
+			//IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
 			this.addPointToLine(lineNum+1, lp);
 		}
 	
@@ -100,7 +100,7 @@ public class Lines {
 		for (LineInfo li : this.EquationOfLines) {
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
 				thickness[i] = (double)li.getThickness();
-				IJ.log("thickness = "+thickness[i]);
+				//IJ.log("thickness = "+thickness[i]);
 				i++;
 			}
 		}
@@ -188,7 +188,7 @@ public class Lines {
 	        }
 			// Average thickness
 			thickness = thickness/n;
-			IJ.log("number of points "+n);
+			//IJ.log("number of points "+n);
 		    double xbar = sumx / n;
 		    double ybar = sumy / n;
 
@@ -217,10 +217,10 @@ public class Lines {
 		    double svar  = rss / df;
 		    double svar1 = svar / xxbar;
 		    double svar0 = svar/n + xbar*xbar*svar1;
-		    IJ.log("line num"+lineNum+" y   = " + beta1 + " * x + " + beta0+"\n"+
-		    			"R^2                 = " + R2+"\n"+
-		    			"std error of slope = " + Math.sqrt(svar1)+"\n"+
-		    			"std error of y-intercept = " + Math.sqrt(svar0));
+		    //IJ.log("line num"+lineNum+" y   = " + beta1 + " * x + " + beta0+"\n"+
+		    //			"R^2                 = " + R2+"\n"+
+		    //			"std error of slope = " + Math.sqrt(svar1)+"\n"+
+		    //			"std error of y-intercept = " + Math.sqrt(svar0));
 		    LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
 			++lineNum;
 			if (EquationOfLines == null) {
