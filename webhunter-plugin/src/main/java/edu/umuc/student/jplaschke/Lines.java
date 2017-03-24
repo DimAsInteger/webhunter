@@ -21,6 +21,7 @@ public class Lines {
 	private ArrayList<LineInfo> EquationOfLines;
 	private int prevY = 0;
 	private int minSeparation = 5000;
+	private int lineNum;
 	
 	public Lines(int size) {
 		ListOfLines = new ArrayList<ArrayList<LinePoint>>();
@@ -31,6 +32,7 @@ public class Lines {
 	
 	// Use this to add the first point (edges) on the x=0 axis
 	public void addPointToLine(int lineNum, LinePoint lp) {
+		this.lineNum = lineNum;
 		// change y to negative 
 		// Cartesian plane starts at (0,0) and y is negative		
 		lp.y=-lp.y;
@@ -58,7 +60,7 @@ public class Lines {
  	} 
 	
 	// Add point to closest line
-	public void addPointToClosestLine(LinePoint lp) {
+	public void addPointToClosestLine(LinePoint lp, int xInc) {
 		double minDistance = 2000000000;
 		ArrayList<LinePoint> lineNumToAddTo = null; // add to this line (minDistance)
 		// change y to negative 
@@ -73,8 +75,9 @@ public class Lines {
 			for (LinePoint point: line) {
 				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
 				// TODO: rethink use of minSeparation
-				if ((dist < minDistance)) { // && (dist < (minSeparation))) {
-						minDistance = dist;
+			//	if ((dist < minDistance)) { // && (dist < (minSeparation))) {
+				if (dist < xInc*2) {
+					    minDistance = dist;
 						lineNumToAddTo = line;  
 						cp = point;
 				} 
@@ -85,7 +88,8 @@ public class Lines {
 		if (lineNumToAddTo != null) {
 	        lineNumToAddTo.add(lp);  
 		} else {
-			if (dist<100) IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
+			IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
+			this.addPointToLine(lineNum+1, lp);
 		}
 	
  	}
@@ -102,6 +106,43 @@ public class Lines {
 		}
 			
 		return calcStatistics(thickness);
+	}
+	
+	double[] calcMinMaxDistance(int width) {
+		double[] minMax = new double[this.EquationOfLines.size()*2];
+		int i=0;
+		LineInfo prevLine = null;
+		double min = 100000;
+		double max = -1000;
+		
+		for (LineInfo li : this.EquationOfLines) {
+			min = 100000;
+			max = -10000;
+			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
+				if (prevLine == null) {
+					prevLine = li;
+				} else {
+					for (int x=0; x<width; x++) {
+						double dist = (prevLine.slope-li.slope)*x + (prevLine.yIntercept-li.yIntercept);
+					    if (dist > max) {
+					    	max = dist;
+					    } 
+					    if (dist < min) {
+					        min = dist;
+					    }
+					
+					}
+					minMax[i] = max;
+					++i;
+					minMax[i] = min;
+					++i;
+					prevLine = li;
+				}
+			}
+		}
+			
+		return minMax;
+		
 	}
 	
 	double[] calcStatistics(double[] values) {

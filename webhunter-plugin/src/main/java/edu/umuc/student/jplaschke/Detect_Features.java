@@ -229,17 +229,17 @@ public class Detect_Features {
 							if (x==startingX) {
 								lines.addPointToLine(lineNum, lp);
 								lp = new LinePoint(x, topY, thickness, false);
-								lines.addPointToClosestLine(lp);
+								lines.addPointToClosestLine(lp, xInc);
 								lp = new LinePoint(x, bottomY, thickness, false);
-								lines.addPointToClosestLine(lp);
+								lines.addPointToClosestLine(lp, xInc);
 								
 								++lineNum;
 							} else {
-								lines.addPointToClosestLine(lp);
+								lines.addPointToClosestLine(lp, xInc);
 								lp = new LinePoint(x, topY, thickness, false);
-								lines.addPointToClosestLine(lp);
+								lines.addPointToClosestLine(lp, xInc);
 								lp = new LinePoint(x, bottomY, thickness, false);
-								lines.addPointToClosestLine(lp);
+								lines.addPointToClosestLine(lp, xInc);
 							}
 						} else if (thickness >= (int)Math.round((double)circleDiameter/4.0)) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
@@ -440,15 +440,9 @@ public class Detect_Features {
     	for (ArrayList<LinePoint> lp : this.LinesEndPoints) {
     		LinePoint p1 = lp.get(0);
     		LinePoint p2 = lp.get(1);
-    		IJ.log("p1 "+p1.x+","+p1.y);
-    		IJ.log("p2 "+p2.x+","+p2.y);
     		double spindleLen = Math.sqrt(Math.pow((p1.x-p2.x),2)+Math.pow(p1.y-p2.y,2));   		
-    		IJ.log("spindleLen "+spindleLen);    		
     		LineInfo li = lines.getEquationOfLines().get(i);
-    	IJ.log("li.getThickness() "+li.getThickness());
-    		
     	    areas[i] = semInfo.getMicronLength(spindleLen) * semInfo.getMicronLength(li.getThickness());
-    		IJ.log("area "+i+" = "+areas[i]);
     		++i;
     	}
     

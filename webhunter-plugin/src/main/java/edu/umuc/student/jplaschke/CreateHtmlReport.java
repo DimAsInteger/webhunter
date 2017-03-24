@@ -93,7 +93,7 @@ public class CreateHtmlReport {
 			bw.write("<html>");
 			bw.write("<head><style>table { border-collapse: collapse; width: 60%;  border: 1px solid black}"+
 			  "th, td { text-align: left; padding: 8px; border: 1px solid black}"+ "ol { padding-bottom: 6px; }"
-			  + " tr:nth-child(even) {background-color: #f2f2f2}</style></head>");
+			  + " tr:nth-child(even) {background-color: #f2f2f2}</style><meta charset=\"UTF-8\"></head>");
 			bw.write("<body>");
 			bw.write("<h1>Web Hunter Report</h1>");
 
@@ -146,10 +146,14 @@ public class CreateHtmlReport {
 			    total += areas[i];
 			}
 			double percentCov = total/(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))*100.0;
-					
+			bw.write("<h3>Spindle Separation Information</h3>");
+			double[] tmp = lines.calcMinMaxDistance(line.getWidth());
+			for (int i=0;i<tmp.length; i++) {
+				IJ.log("minmax ="+tmp[i]);
+			}
+						
 		    bw.write("<tr><td>Total </td><td>"+formatter.format(total)+" "+IJ.micronSymbol+"m&sup2;"+"</td></tr>");
 		    bw.write("<tr><td>Percent Coverage </td><td>"+formatter.format(percentCov)+"%</td></tr>");
-		    
 	        bw.write("</table>");            
             
 			bw.write("<h2>Droplet Image</h2>");
@@ -158,7 +162,7 @@ public class CreateHtmlReport {
 			
 			bw.write("<h2>Droplet Analysis</h2>");
 
-			bw.write("<h2>Algorith Accuracy</h2>");
+			bw.write("<h2>Algorithm Accuracy</h2>");
 			bw.write("</body>");
 
 			bw.write("</html>");
