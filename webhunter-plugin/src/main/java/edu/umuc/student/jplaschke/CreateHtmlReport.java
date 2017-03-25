@@ -120,7 +120,7 @@ public class CreateHtmlReport {
 			bw.write("<div style=\"position:relative; height: 100%; width: 100%; top:0;left 0;\">");
 			bw.write("<img src=\"file:///"+lineFname + ".jpg\" style='height: 100%'></div>");
 			
-			bw.write("<h2>Line Analysis</h2>");
+			bw.write("<h2>Line Statistics</h2>");
 			bw.write("<p>Number of lines = "+lines.getEquationOfLines().size()+"</p>");
 			bw.write("<h3>Equations of lines</h3>");
 			bw.write("<ol>");
@@ -165,7 +165,35 @@ public class CreateHtmlReport {
 			bw.write("<div style=\"position:relative; height: 100%; width: 100%; top:0;left 0;\">");
 			bw.write("<img src=\"file:///"+dropFname + ".jpg\" style='height: 100%'></div>");
 			
-			bw.write("<h2>Droplet Analysis</h2>");
+			bw.write("<h2>Droplet Statistics</h2>");
+			bw.write("<p>Number of droplets = "+circles.getListofCircles().size()+"</p>");
+            bw.write("<h3>Droplet Area Information</h3>");
+			bw.write("<table style='width:100%'><tr><th>Droplet Number</th><th>x</th><th>y</th><th>Area "+IJ.micronSymbol+"m&sup2;</th></tr>");
+            total = 0;
+            int i = 0;
+			for (CircleInfo ci : circles.getListofCircles()) {
+				if (ci.getRadius() > 0) {
+				    areas[i] = 3.14*(double)ci.getRadius();
+				}
+			    bw.write("<tr><td>Droplet "+ci.getCircleNum()+"</td><td>"+ci.getX()+"</td><td>"+ci.getY()+"</td><td>"
+			              +formatter.format(areas[i])+"</td></tr>");
+			    total += areas[i];
+			    
+			    ++i;
+			}
+			percentCov = total/(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))*100.0;			
+		    bw.write("<tr><td>Total </td><td></td><td></td><td>"+formatter.format(total)+" "+IJ.micronSymbol+"m&sup2;"+"</td></tr>");
+		    bw.write("<tr><td>Percent Coverage </td><td></td><td></td><td>"+formatter.format(percentCov)+"%</td></tr>");
+	        bw.write("</table>");            
+	        bw.write("<h3>Area statistics</h3>");
+			stats = StatsFunctions.calcStatistics(areas);
+			bw.write("<table style='width:100%'>");
+            bw.write("<tr><td>Minimum</td><td>"+formatter.format(semInfo.getMicronLength(stats[0]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Maximum</td><td>"+formatter.format(semInfo.getMicronLength(stats[1]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Mean</td><td>"+formatter.format(semInfo.getMicronLength(stats[2]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Standard Deviation</td><td>"+formatter.format(semInfo.getMicronLength(stats[3]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("</table>");
+            
 
 			bw.write("<h2>Algorithm Accuracy</h2>");
 			bw.write("</body>");

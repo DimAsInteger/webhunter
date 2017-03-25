@@ -105,7 +105,7 @@ public class Lines {
 			}
 		}
 			
-		return calcStatistics(thickness);
+		return StatsFunctions.calcStatistics(thickness);
 	}
 	
 	double[] calcMinMaxDistance(int width) {
@@ -145,23 +145,7 @@ public class Lines {
 		
 	}
 	
-	double[] calcStatistics(double[] values) {
-		double[] stats = {0,0,0,0};
-		DescriptiveStatistics statslib = new DescriptiveStatistics();
-
-		// Add the data from the array
-		for( int i = 0; i < values.length; i++) {
-		        statslib.addValue(values[i]);
-		}
-
-		// Compute some statistics
-		stats[0] = statslib.getMin();
-		stats[1] = statslib.getMax();
-		stats[2] = statslib.getMean();
-		stats[3] = statslib.getStandardDeviation();
-
-		return stats; // min, max, mean, standard deviation
-	}
+	
 		
 	// Calculate linear regression for a line to get y=mx+b
 	public void CalculateLinearReqressions() {
