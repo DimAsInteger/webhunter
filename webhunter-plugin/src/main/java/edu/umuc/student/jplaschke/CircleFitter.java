@@ -37,13 +37,14 @@ package edu.umuc.student.jplaschke;
 //POSSIBILITY OF SUCH DAMAGE.
 
 
-import java.io.Reader;
+import ij.IJ;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.Locale;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -139,6 +140,16 @@ public CircleFitter() {
 }
 
 
+private double median(double[] m, int length) {
+	Arrays.sort(m,0,length);
+    int middle = 1;
+    if (length%2 == 1) {
+        return m[middle];
+    } else {
+        return (m[middle-1] + m[middle]) / 2.0;
+    }
+}
+
 /** Initialize an approximate circle based on all triplets.
 * @param points circular ring sample points
 * @exception LocalException if all points are aligned
@@ -153,6 +164,8 @@ public void initialize(Point2D.Double[] points)
  center.x = 0.0;
  center.y = 0.0;
  int n = 0;
+ double[] xArray = new double[points.length*points.length*points.length];
+ double[] yArray = new double[points.length*points.length*points.length];
  for (int i = 0; i < (points.length - 2); ++i) {
    Point2D.Double p1 = (Point2D.Double) points[i];
    for (int j = i + 1; j < (points.length - 1); ++j) {
@@ -164,7 +177,9 @@ public void initialize(Point2D.Double[] points)
        Point2D.Double cc = circumcenter(p1, p2, p3);
        if (cc != null) {
          // the points are not aligned, we have a circumcenter
-         ++n;
+    	 xArray[n] = cc.x;
+    	 yArray[n] = cc.y;
+    	 ++n;
          center.x += cc.x;
          center.y += cc.y;
        }
@@ -179,6 +194,8 @@ public void initialize(Point2D.Double[] points)
  // initialize using the circumcenters average
  center.x /= n;
  center.y /= n;
+ //center.x = median(xArray,n);
+ //center.y = median(yArray,n);
  updateRadius();
 
 }

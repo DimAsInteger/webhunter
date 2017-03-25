@@ -241,7 +241,7 @@ public class Detect_Features {
 								lp = new LinePoint(x, bottomY, thickness, false);
 								lines.addPointToClosestLine(lp, xInc);
 							}
-						} else if (thickness >= (int)Math.round((double)circleDiameter/4.0)) {
+						} else if (thickness >= (int)Math.round((double)maxThickness*2.0)) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp, circleDiameter);

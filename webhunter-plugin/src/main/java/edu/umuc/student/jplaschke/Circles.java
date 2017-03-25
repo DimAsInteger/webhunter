@@ -70,7 +70,7 @@ public class Circles {
 	    	   try {
 	    		   fitter.initialize(points);
 	    		   // minimize the residuals
-	    		   int iter = fitter.minimize(100, 0.1, 1.0e-12);
+	    		   int iter = fitter.minimize(100, 0.1, 1.0e-5);
 	    		   IJ.log("converged circle: x="
  	                      + format.format(fitter.getCenter().x)
  	                      + " x="     + format.format(fitter.getCenter().y)
@@ -132,7 +132,21 @@ public class Circles {
 		IJ.log("circle diameter = "+circleDiameter);
 		this.performCircleRegression(circleDiameter);
  	}
-
+	
+	private boolean checkRight(int start, double slope, double i,
+			                        byte[] pixels, int width, int val, int n) {
+		
+		boolean test = true;
+		for (int x=start; x<n; x++) {
+		    int y = (int) (Math.round((double)x*slope) + Math.round(i));
+    	    y = -y;
+    	    if (((pixels[x + y * width])&0xFF) != (int)val) {
+    	    	test = false;
+    	    }
+		}
+		return test;
+	}
+	
 	private void searchCirclesHorizontalDir(byte[] pixels, int top, int bottom, int width, 
 			                     int slope, int circleDiameter) {
 		int state = SEARCH_LEFT_EDGE;
@@ -144,15 +158,21 @@ public class Circles {
 		    
 				if (state == SEARCH_LEFT_EDGE) {
 					if (((pixels[x + y * width])&0xFF) == (int)10) {
-						state = SEARCH_RIGHT_EDGE;
-						LinePoint cp = new LinePoint(x, y, -1, false);
-						addPointToCircleSet(cp, circleDiameter);
+						if (checkRight(x, slope, i,
+		                        pixels, width, 10, 4)) {
+							state = SEARCH_RIGHT_EDGE;
+							LinePoint cp = new LinePoint(x, y, -1, false);
+							addPointToCircleSet(cp, circleDiameter);
+						}
 					}
 				} else {
 					if (((pixels[x + y * width])&0xFF) == (int)80) {
-						state = SEARCH_LEFT_EDGE;
-						LinePoint cp = new LinePoint(x, y, -1, false);
-						addPointToCircleSet(cp, circleDiameter);
+						if (checkRight(x, slope, i,
+		                        pixels, width, 80, 4)) {
+							state = SEARCH_LEFT_EDGE;
+							LinePoint cp = new LinePoint(x, y, -1, false);
+							addPointToCircleSet(cp, circleDiameter);
+						}
 					}
 				}
 			}
@@ -170,6 +190,7 @@ public class Circles {
 		
 		cp.y=-cp.y;
         double dist = 10000;
+        double minDist = 100000;
         ArrayList<LinePoint> cirNumToAddTo = null;
         if (allCirclePoints != null) {
 			for (ArrayList<LinePoint> possibleCircle : allCirclePoints) {

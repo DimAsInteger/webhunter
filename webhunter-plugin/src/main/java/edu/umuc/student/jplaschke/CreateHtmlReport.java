@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 public class CreateHtmlReport {
@@ -171,9 +172,10 @@ public class CreateHtmlReport {
 			bw.write("<table style='width:100%'><tr><th>Droplet Number</th><th>x</th><th>y</th><th>Area "+IJ.micronSymbol+"m&sup2;</th></tr>");
             total = 0;
             int i = 0;
+            Arrays.fill(areas, 0);
 			for (CircleInfo ci : circles.getListofCircles()) {
 				if (ci.getRadius() > 0) {
-				    areas[i] = 3.14*(double)ci.getRadius();
+				    areas[i] = 3.14*semInfo.getMicronLength((double)ci.getRadius());
 				}
 			    bw.write("<tr><td>Droplet "+ci.getCircleNum()+"</td><td>"+ci.getX()+"</td><td>"+ci.getY()+"</td><td>"
 			              +formatter.format(areas[i])+"</td></tr>");
@@ -188,9 +190,9 @@ public class CreateHtmlReport {
 	        bw.write("<h3>Area statistics</h3>");
 			stats = StatsFunctions.calcStatistics(areas);
 			bw.write("<table style='width:100%'>");
-            bw.write("<tr><td>Minimum</td><td>"+formatter.format(semInfo.getMicronLength(stats[0]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
-            bw.write("<tr><td>Maximum</td><td>"+formatter.format(semInfo.getMicronLength(stats[1]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
-            bw.write("<tr><td>Mean</td><td>"+formatter.format(semInfo.getMicronLength(stats[2]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Minimum</td><td>"+formatter.format(stats[0])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Maximum</td><td>"+formatter.format(stats[1])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Mean</td><td>"+formatter.format(stats[2])+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("<tr><td>Standard Deviation</td><td>"+formatter.format(semInfo.getMicronLength(stats[3]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("</table>");
             
