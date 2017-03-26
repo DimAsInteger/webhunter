@@ -98,8 +98,8 @@ public class Simple_Threshold  {
 	}
 
 	public void showAbout() {
-		IJ.showMessage("ProcessPixels",
-			"a template for processing each pixel of an image"
+		IJ.showMessage("Simple Threshold",
+			"Simple thresholding"
 		);
 	}
 

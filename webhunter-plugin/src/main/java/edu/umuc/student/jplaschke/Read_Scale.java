@@ -168,8 +168,8 @@ public class Read_Scale {
 	}
 
 	public void showAbout() {
-		IJ.showMessage("ProcessPixels",
-			"a template for processing each pixel of an image"
+		IJ.showMessage("Read Scale",
+			"reads the micrograph scale information"
 		);
 	}
 

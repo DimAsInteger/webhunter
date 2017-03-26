@@ -85,6 +85,8 @@ public class CreateHtmlReport {
 		fileSaverLine.saveAsJpeg(lineFname+".jpg");
 		String dropFname = tiffDir.getPath()+File.separator+strDate+"drop_"+fileName;
 		fileSaverDroplet.saveAsJpeg(dropFname+".jpg");
+		String histoFname = tiffDir.getPath()+File.separator+strDate+"histo_"+fileName;
+		fileSaverDroplet.saveAsJpeg(histoFname+".jpg");
 		
 		// Create HTML report
 		try {
@@ -195,7 +197,13 @@ public class CreateHtmlReport {
             bw.write("<tr><td>Mean</td><td>"+formatter.format(stats[2])+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("<tr><td>Standard Deviation</td><td>"+formatter.format(semInfo.getMicronLength(stats[3]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
             bw.write("</table>");
-            
+        
+            double[] histodata = new double[i];
+            for (int index=0; index<i; index++) {
+            	histodata[index] = areas[index];
+            }
+            circles.createHistogram(histodata,stats[0],stats[1],histoFname);
+			bw.write("<img src=\"file:///"+histoFname + "\" style='height: 100%'></div>");
 
 			bw.write("<h2>Algorithm Accuracy</h2>");
 			bw.write("</body>");

@@ -149,7 +149,7 @@ public class Lines {
 		
 	// Calculate linear regression for a line to get y=mx+b
 	public void CalculateLinearReqressions() {
-		IJ.showMessage("Num Lines in list "+ListOfLines.size());
+		//IJ.showMessage("Num Lines in list "+ListOfLines.size());
 		int lineNum = 1;
 		for (ArrayList<LinePoint> line : ListOfLines) {
 			int MAXN = line.size()+1;

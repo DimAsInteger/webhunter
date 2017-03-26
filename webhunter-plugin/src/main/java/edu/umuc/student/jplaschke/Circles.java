@@ -2,12 +2,27 @@ package edu.umuc.student.jplaschke;
 
 import ij.IJ;
 
+import java.awt.Color;
+import java.awt.Paint;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.DefaultDrawingSupplier;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.data.statistics.HistogramType;
 
 import edu.umuc.student.jplaschke.CircleFitter.LocalException;
 
@@ -62,7 +77,7 @@ public class Circles {
 			    	     (Point2D.Double[]) list.toArray(new Point2D.Double[list.size()]);
 
 	    	   DecimalFormat format =
-	    	     new DecimalFormat("000.00000000",
+	    	     new DecimalFormat("000.000",
 	    	                       new DecimalFormatSymbols(Locale.US));
 
 	    	   // fit a circle to the test points
@@ -185,6 +200,40 @@ public class Circles {
 		return circleCount;
 	}
 	
+	public void createHistogram(double[] values, double min, double max, String name) {
+		HistogramDataset dataset = new HistogramDataset();
+		dataset.setType(HistogramType.FREQUENCY);
+       	dataset.addSeries("Histogram",values,values.length);
+       	String plotTitle = "Droplet Area Histogram"; 
+       	String xaxis = "Droplet Area (microns squared)";
+       	String yaxis = "Count"; 
+       	PlotOrientation orientation = PlotOrientation.VERTICAL; 
+       	boolean show = false; 
+       	boolean toolTips = false;
+       	boolean urls = false; 
+       	JFreeChart chart = ChartFactory.createHistogram( plotTitle, xaxis, yaxis, 
+                dataset, orientation, show, toolTips, urls);
+       	XYPlot plot = (XYPlot) chart.getPlot();
+        XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
+        renderer.setBarPainter(new StandardXYBarPainter());
+        Paint[] paintArray = new Paint[1];
+        paintArray[0] = new Color(0x800000ff, true);
+        plot.setDrawingSupplier(new DefaultDrawingSupplier(
+                paintArray,
+                DefaultDrawingSupplier.DEFAULT_FILL_PAINT_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_STROKE_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_SHAPE_SEQUENCE));
+       	int width = 500;
+       	int height = 300; 
+        try {
+        ChartUtilities.saveChartAsJPEG(new File(name), chart, width, height);
+        } catch (IOException e) {}
+            
+	}
+	
+
 	// LinePoint cp - circle point
 	public void addPointToCircleSet(LinePoint cp, int circleDiameter) {
 		

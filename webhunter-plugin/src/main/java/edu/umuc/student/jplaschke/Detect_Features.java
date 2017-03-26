@@ -287,8 +287,8 @@ public class Detect_Features {
 	}
 
 	public void showAbout() {
-		IJ.showMessage("ProcessPixels",
-			"a template for processing each pixel of an image"
+		IJ.showMessage("Detect Features",
+			"detects spindles and droplets"
 		);
 	}
 
