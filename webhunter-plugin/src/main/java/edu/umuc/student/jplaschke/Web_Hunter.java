@@ -14,9 +14,11 @@ import java.io.File;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
+
 
 /**
  * Web_Hunter is a Imagej plugin that detects line and circle orientation
@@ -187,10 +189,21 @@ public class Web_Hunter implements PlugIn {
 		System.setProperty("plugins.dir", pluginsDir);
 
 		// start ImageJ
-		new ImageJ();
-
+		ImageJ ij = new ImageJ();
+		ij.exitWhenQuitting(false);
+	
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");
+
+		while(!ij.quitting())  { 
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		}
+		WindowManager.closeAllWindows();
 	}
 
 }

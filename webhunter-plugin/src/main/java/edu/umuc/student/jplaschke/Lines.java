@@ -5,8 +5,6 @@ import ij.IJ;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
 /**
  * Data structure for lines
  * 
@@ -75,8 +73,9 @@ public class Lines {
 			for (LinePoint point: line) {
 				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
 				// TODO: rethink use of minSeparation
-			//	if ((dist < minDistance)) { // && (dist < (minSeparation))) {
-				if (dist < xInc*2) {
+				//IJ.log("dist "+dist+" from "+point.x+","+point.y+" to "+"line "+lp.x+","+lp.y);
+				if ((dist < minDistance) && (dist >= xInc) ) { // && (dist < (minSeparation))) {
+			//	if (dist < xInc*2) {
 					    minDistance = dist;
 						lineNumToAddTo = line;  
 						cp = point;
@@ -145,10 +144,11 @@ public class Lines {
 		
 	}
 	
-	
 		
 	// Calculate linear regression for a line to get y=mx+b
 	public void CalculateLinearReqressions() {
+		TheilSen robustReg = new TheilSen();
+		
 		//IJ.showMessage("Num Lines in list "+ListOfLines.size());
 		int lineNum = 1;
 		for (ArrayList<LinePoint> line : ListOfLines) {
@@ -172,7 +172,7 @@ public class Lines {
 	        }
 			// Average thickness
 			thickness = thickness/n;
-			//IJ.log("number of points "+n);
+			IJ.log("number of points "+n);
 		    double xbar = sumx / n;
 		    double ybar = sumy / n;
 
@@ -201,22 +201,25 @@ public class Lines {
 		    double svar  = rss / df;
 		    double svar1 = svar / xxbar;
 		    double svar0 = svar/n + xbar*xbar*svar1;
-		    //IJ.log("line num"+lineNum+" y   = " + beta1 + " * x + " + beta0+"\n"+
-		    //			"R^2                 = " + R2+"\n"+
-		    //			"std error of slope = " + Math.sqrt(svar1)+"\n"+
-		    //			"std error of y-intercept = " + Math.sqrt(svar0));
-		    LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
+		    IJ.log("line num"+lineNum+" y   = " + beta1 + " * x + " + beta0+"\n"+
+		    			"R^2                 = " + R2+"\n"+
+		    			"std error of slope = " + Math.sqrt(svar1)+"\n"+
+		    			"std error of y-intercept = " + Math.sqrt(svar0));
+		    double[] lineDescriptive = TheilSen.getDescriptives(x, y);
+			LineInfo tmp = new LineInfo(lineDescriptive[1], lineDescriptive[0], thickness, false);
+		    //LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
 			++lineNum;
 			if (EquationOfLines == null) {
 				EquationOfLines = new ArrayList<LineInfo>();
 			}
+			EquationOfLines.add(tmp);
 			// If standard error is less than 4? it is a line
 			// if it is greater than the line contains a circle??? maybe
-			if (!Double.isNaN(svar0)) {		
-				if (Math.sqrt(svar0) < 30) {   //TODO think this over
-			       EquationOfLines.add(tmp);
-				}
-			}
+			//if (!Double.isNaN(svar0)) {		
+			//	if (Math.sqrt(svar0) < 120000000000) {   //TODO think this over
+			 //      EquationOfLines.add(tmp);
+			//	}
+			//}
 			
 		}
 	}

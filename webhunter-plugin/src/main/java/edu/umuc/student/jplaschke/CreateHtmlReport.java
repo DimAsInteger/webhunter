@@ -171,7 +171,8 @@ public class CreateHtmlReport {
 			bw.write("<h2>Droplet Statistics</h2>");
 			bw.write("<p>Number of droplets = "+circles.getListofCircles().size()+"</p>");
             bw.write("<h3>Droplet Area Information</h3>");
-			bw.write("<table style='width:100%'><tr><th>Droplet Number</th><th>x</th><th>y</th><th>Area "+IJ.micronSymbol+"m&sup2;</th></tr>");
+			bw.write("<table style='width:100%'><tr><th>Droplet Number</th><th>x</th><th>y</th><th>Area "+
+                     IJ.micronSymbol+"m&sup2;</th><th>Aggregate</th></tr>");
             total = 0;
             int i = 0;
             Arrays.fill(areas, 0);
@@ -180,7 +181,7 @@ public class CreateHtmlReport {
 				    areas[i] = 3.14*semInfo.getMicronLength((double)ci.getRadius());
 				}
 			    bw.write("<tr><td>Droplet "+ci.getCircleNum()+"</td><td>"+ci.getX()+"</td><td>"+ci.getY()+"</td><td>"
-			              +formatter.format(areas[i])+"</td></tr>");
+			              +formatter.format(areas[i])+"</td><td>"+ci.isAggregate()+"</th></tr>");
 			    total += areas[i];
 			    
 			    ++i;
@@ -205,7 +206,12 @@ public class CreateHtmlReport {
             circles.createHistogram(histodata,stats[0],stats[1],histoFname);
 			bw.write("<img src=\"file:///"+histoFname + "\" style='height: 100%'></div>");
 
-			bw.write("<h2>Algorithm Accuracy</h2>");
+			
+			// Chris add distance from middle point of image
+			for (CircleInfo ci : circles.getListofCircles()) {
+			    // Fill this in 
+				// distance ci.getX(); to each ci.getY()
+			}
 			bw.write("</body>");
 
 			bw.write("</html>");

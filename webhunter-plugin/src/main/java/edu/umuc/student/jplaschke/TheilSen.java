@@ -10,7 +10,7 @@ import org.apache.commons.collections.primitives.ArrayDoubleList;
  */
 public class TheilSen {
 
-    private TheilSen() {
+    public TheilSen() {
     }
     
     

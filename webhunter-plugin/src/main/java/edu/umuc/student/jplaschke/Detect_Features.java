@@ -210,7 +210,7 @@ public class Detect_Features {
 					case BOTTOM_EDGE_FOUND:
 						int thickness = bottomY - topY; // add eight to account for top edge
 						int halfThickness = (int)Math.round(((float)thickness)/2.0);
-						if (x<500) {
+						if ((x<startingX+xInc*5) && (x>startingX-xInc)) {
 							IJ.log("bottomedge found bottomy= "+bottomY+" topy= "+topY+" thickness= "+thickness
 							+"x= "+x+" y= "+y+" thickness= "+thickness+
 							"val1 "+prevTop+" val2 "+(int)pixels[x + y * width]);
@@ -228,20 +228,12 @@ public class Detect_Features {
 							LinePoint lp = new LinePoint(x, topY+halfThickness, thickness, false);
 							if (x==startingX) {
 								lines.addPointToLine(lineNum, lp);
-								lp = new LinePoint(x, topY, thickness, false);
-								lines.addPointToClosestLine(lp, xInc);
-								lp = new LinePoint(x, bottomY, thickness, false);
-								lines.addPointToClosestLine(lp, xInc);
-								
 								++lineNum;
+								IJ.log("Add line *** "+lineNum);
 							} else {
 								lines.addPointToClosestLine(lp, xInc);
-								lp = new LinePoint(x, topY, thickness, false);
-								lines.addPointToClosestLine(lp, xInc);
-								lp = new LinePoint(x, bottomY, thickness, false);
-								lines.addPointToClosestLine(lp, xInc);
 							}
-						} else if (thickness >= (int)Math.round((double)maxThickness*2.0)) {
+						} else if (thickness >= (int)Math.round((double)circleDiameter)/4.0) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp, circleDiameter);

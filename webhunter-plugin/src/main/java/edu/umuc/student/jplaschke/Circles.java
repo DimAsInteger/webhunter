@@ -174,7 +174,7 @@ public class Circles {
 				if (state == SEARCH_LEFT_EDGE) {
 					if (((pixels[x + y * width])&0xFF) == (int)10) {
 						if (checkRight(x, slope, i,
-		                        pixels, width, 10, 4)) {
+		                        pixels, width, 10, 3)) {
 							state = SEARCH_RIGHT_EDGE;
 							LinePoint cp = new LinePoint(x, y, -1, false);
 							addPointToCircleSet(cp, circleDiameter);
@@ -183,7 +183,7 @@ public class Circles {
 				} else {
 					if (((pixels[x + y * width])&0xFF) == (int)80) {
 						if (checkRight(x, slope, i,
-		                        pixels, width, 80, 4)) {
+		                        pixels, width, 80, 3)) {
 							state = SEARCH_LEFT_EDGE;
 							LinePoint cp = new LinePoint(x, y, -1, false);
 							addPointToCircleSet(cp, circleDiameter);
