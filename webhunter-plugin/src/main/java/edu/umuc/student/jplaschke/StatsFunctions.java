@@ -2,6 +2,7 @@ package edu.umuc.student.jplaschke;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+
 public class StatsFunctions {
 	
 	public static double[] calcStatistics(double[] values) {

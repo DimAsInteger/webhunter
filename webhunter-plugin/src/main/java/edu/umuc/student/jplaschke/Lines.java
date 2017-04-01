@@ -69,19 +69,36 @@ public class Lines {
 		lp.y=-lp.y;
         LinePoint cp = null;  // for debug - closest point
         double dist = 10000;
-		for (ArrayList<LinePoint> line : ListOfLines) {
-			for (LinePoint point: line) {
-				dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
-				// TODO: rethink use of minSeparation
-				//IJ.log("dist "+dist+" from "+point.x+","+point.y+" to "+"line "+lp.x+","+lp.y);
-				if ((dist < minDistance) && (dist >= xInc) ) { // && (dist < (minSeparation))) {
-			//	if (dist < xInc*2) {
-					    minDistance = dist;
-						lineNumToAddTo = line;  
-						cp = point;
-				} 
-				
-			}
+        LinePoint point = null;
+        double slope = 2.0;
+        for (ArrayList<LinePoint> line : ListOfLines) {
+        	// get last point
+        	if (line.size() == 1) {
+        		point = line.get(0);
+        	} else if (line.size() == 2){
+        		point = line.get(line.size()-1);
+        		LinePoint prevPoint = line.get(line.size()-2);
+        		if ((point.getX() - prevPoint.getX() != 0))
+        		    slope = Math.abs((double)(point.getY() - prevPoint.getY()) / (double)(point.getX() - prevPoint.getX())); 
+        		else 
+        		    slope = Math.abs((double)(point.getY() - prevPoint.getY()));
+        		line.get(0).setCurSlope(slope);
+        	} else {
+        		point = line.get(line.size()-1);
+        	}
+			//IJ.log("slope = "+slope+" line size "+line.size());
+        	if (point != null) {
+        		dist = Math.sqrt(Math.pow((point.x-lp.x),2)+Math.pow(point.y-lp.y,2));
+        	}
+        		// TODO: rethink use of minSeparation
+			//	if ((dist < minDistance) && (dist < (minSeparation))) {
+//			IJ.log("dist = "+dist+" xInc "+Math.round(xInc+(double)xInc*slope));
+			if (dist <= Math.round(xInc+(double)xInc*line.get(0).getCurSlope())) {
+				    minDistance = dist;
+					lineNumToAddTo = line;  
+					cp = point;
+			} 
+		
 		}
 	
 		if (lineNumToAddTo != null) {
@@ -205,21 +222,21 @@ public class Lines {
 		    			"R^2                 = " + R2+"\n"+
 		    			"std error of slope = " + Math.sqrt(svar1)+"\n"+
 		    			"std error of y-intercept = " + Math.sqrt(svar0));
-		    double[] lineDescriptive = TheilSen.getDescriptives(x, y);
-			LineInfo tmp = new LineInfo(lineDescriptive[1], lineDescriptive[0], thickness, false);
-		    //LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
+		    //double[] lineDescriptive = TheilSen.getDescriptives(x, y);
+			//LineInfo tmp = new LineInfo(lineDescriptive[1], lineDescriptive[0], thickness, false);
+		    LineInfo tmp = new LineInfo(beta1, beta0, thickness, false);
 			++lineNum;
 			if (EquationOfLines == null) {
 				EquationOfLines = new ArrayList<LineInfo>();
 			}
-			EquationOfLines.add(tmp);
+			//EquationOfLines.add(tmp);
 			// If standard error is less than 4? it is a line
 			// if it is greater than the line contains a circle??? maybe
-			//if (!Double.isNaN(svar0)) {		
-			//	if (Math.sqrt(svar0) < 120000000000) {   //TODO think this over
-			 //      EquationOfLines.add(tmp);
-			//	}
-			//}
+			if (!Double.isNaN(svar0)) {		
+				if (Math.sqrt(svar0) < 40) {   //TODO think this over
+			       EquationOfLines.add(tmp);
+				}
+			}
 			
 		}
 	}

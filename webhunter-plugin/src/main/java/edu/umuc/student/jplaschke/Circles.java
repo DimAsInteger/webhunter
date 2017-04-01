@@ -112,9 +112,9 @@ public class Circles {
 	}
 	// TODO: Chris - fill this is
 	// Use this to find circles
-	public void findCircles(Lines circles, byte[] pixels, int width, int height, int circleDiameter) {
+	public void findCircles(Lines lines, byte[] pixels, int width, int height, int circleDiameter) {
 				
-		for (LineInfo li : circles.getEquationOfLines()) {
+		for (LineInfo li : lines.getEquationOfLines()) {
 			//IJ.showMessage("m = "+li.slope+" y-intercept = "+li.yIntercept);
 			if ((!Double.isNaN(li.slope)) && (!Double.isNaN(li.yIntercept))) {
 			    for (int i=0; i<width; i++) {
@@ -165,7 +165,7 @@ public class Circles {
 	private void searchCirclesHorizontalDir(byte[] pixels, int top, int bottom, int width, 
 			                     int slope, int circleDiameter) {
 		int state = SEARCH_LEFT_EDGE;
-		for (int i=top; i>bottom; i++) {
+		for (int i=top; i>=bottom; i++) {
 			state = SEARCH_LEFT_EDGE;
 			for (int x=0; x<width; x++) {
 				int y = (int) (Math.round((double)x*slope) + Math.round(i));
@@ -246,7 +246,7 @@ public class Circles {
 			    if (possibleCircle != null) {
 				    for (LinePoint point : possibleCircle) {
 						dist = Math.sqrt(Math.pow((point.x-cp.x),2)+Math.pow(point.y-cp.y,2));
-						if (dist < circleDiameter) { 
+						if (dist <= circleDiameter) { 
 							cirNumToAddTo = possibleCircle;
 						} 				
 				   }

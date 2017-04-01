@@ -6,12 +6,14 @@ public class LinePoint {
 	int y;
 	private int thickness;
 	private boolean aggregate;
+	private double curSlope;
 	
 	public LinePoint(int x, int y, int thickness, boolean aggregate) {
 	   this.x = x;
 	   this.y = y;
 	   this.thickness = thickness;
 	   this.aggregate = aggregate;
+	   curSlope = 2;
 	}
 	
 	public int getX() {
@@ -37,6 +39,14 @@ public class LinePoint {
 	}
 	public void setAggregate(boolean aggregate) {
 		this.aggregate = aggregate;
+	}
+
+	public double getCurSlope() {
+		return curSlope;
+	}
+
+	public void setCurSlope(double curSlope) {
+		this.curSlope = curSlope;
 	}
 	
 

@@ -229,11 +229,13 @@ public class Detect_Features {
 							if (x==startingX) {
 								lines.addPointToLine(lineNum, lp);
 								++lineNum;
+								lp = new LinePoint(x+xInc, topY, thickness, false);
+								lines.addPointToClosestLine(lp, xInc);
 								IJ.log("Add line *** "+lineNum);
 							} else {
 								lines.addPointToClosestLine(lp, xInc);
 							}
-						} else if (thickness >= (int)Math.round((double)circleDiameter)/4.0) {
+						} else if (thickness > maxThickness*2) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp, circleDiameter);
