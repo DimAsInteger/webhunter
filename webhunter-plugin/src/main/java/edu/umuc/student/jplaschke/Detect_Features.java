@@ -15,7 +15,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 
 import ij.IJ;
-import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
@@ -229,13 +228,11 @@ public class Detect_Features {
 							if (x==startingX) {
 								lines.addPointToLine(lineNum, lp);
 								++lineNum;
-								lp = new LinePoint(x+xInc, topY, thickness, false);
-								lines.addPointToClosestLine(lp, xInc);
 								IJ.log("Add line *** "+lineNum);
 							} else {
 								lines.addPointToClosestLine(lp, xInc);
 							}
-						} else if (thickness > maxThickness*2) {
+						} else if (thickness > circleDiameter) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
 							circles.addPointToCircleSet(cp, circleDiameter);

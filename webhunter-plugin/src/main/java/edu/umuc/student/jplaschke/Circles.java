@@ -128,13 +128,14 @@ public class Circles {
 			    		// find runs of white (value > x)?
 			    		//(pixels[x + y * width]&0xFF)
 			    		// Look for halfDiam pixels above the line
-			    		int halfDiam = (int)Math.round((double)circleDiameter); // / 2.0);
+			    		int maxCirDiam = circleDiameter*5;
+			    		int halfDiam = (int)Math.round((double)maxCirDiam); // / 2.0);
 			    		searchCirclesHorizontalDir(pixels, positiveYintercept-halfDiam, positiveYintercept-2, width, 
-			    				(int)Math.round(li.slope), circleDiameter);
+			    				(int)Math.round(li.slope), maxCirDiam);
 			    		
 			    		//Look for halfDiam pixels below the line
 			    		searchCirclesHorizontalDir(pixels, positiveYintercept+2, positiveYintercept+halfDiam, width, 
-			    				                     (int)Math.round(li.slope),circleDiameter);
+			    				                     (int)Math.round(li.slope),maxCirDiam);
 			    		
 			    	} catch (Exception e) {
 			    		//IJ.log(e.getMessage());
@@ -165,7 +166,7 @@ public class Circles {
 	private void searchCirclesHorizontalDir(byte[] pixels, int top, int bottom, int width, 
 			                     int slope, int circleDiameter) {
 		int state = SEARCH_LEFT_EDGE;
-		for (int i=top; i>=bottom; i++) {
+		for (int i=top; i>=bottom; i+=2) {
 			state = SEARCH_LEFT_EDGE;
 			for (int x=0; x<width; x++) {
 				int y = (int) (Math.round((double)x*slope) + Math.round(i));

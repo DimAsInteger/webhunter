@@ -82,6 +82,7 @@ public class Lines {
         		    slope = Math.abs((double)(point.getY() - prevPoint.getY()) / (double)(point.getX() - prevPoint.getX())); 
         		else 
         		    slope = Math.abs((double)(point.getY() - prevPoint.getY()));
+        		if (slope == 0) slope = 0.2;
         		line.get(0).setCurSlope(slope);
         	} else {
         		point = line.get(line.size()-1);
@@ -105,7 +106,7 @@ public class Lines {
 	        lineNumToAddTo.add(lp);  
 		} else {
 			//IJ.log("dist ="+dist+" DID NOT ADD point add closest point x = "+lp.x+" y = "+lp.y);
-			this.addPointToLine(lineNum+1, lp);
+			//this.addPointToLine(lineNum+1, lp);
 		}
 	
  	}
