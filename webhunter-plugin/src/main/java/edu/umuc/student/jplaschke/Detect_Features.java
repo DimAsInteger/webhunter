@@ -260,8 +260,9 @@ public class Detect_Features {
 		} // while !done
 		lines.CalculateLinearReqressions();
 		
+		IJ.log("find circles less thatn ##### "+semInfo.numPixelsInOneMicron()*9);
 		// look for circles
-		this.circles.findCircles(lines, pixels, width, height, circleDiameter);
+		this.circles.findCircles(lines, pixels, width, height, semInfo.numPixelsInOneMicron()*9);  //circleDiameter);
 		
 		pixels = this.drawCircles();
 		image.getProcessor().setPixels((Object)pixels);

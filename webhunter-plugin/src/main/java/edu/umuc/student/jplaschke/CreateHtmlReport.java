@@ -112,9 +112,10 @@ public class CreateHtmlReport {
         	NumberFormat formatter = new DecimalFormat("#0.000");  
     		
 			bw.write("<h2>Original Image</h2>");
-			bw.write("<p>micrograph width: "+formatter.format(semInfo.getMicronLength(line.getWidth()))+IJ.micronSymbol+"m");
-	        bw.write("</p><p>micrograph height: "+formatter.format(semInfo.getMicronLength(line.getHeight()))+IJ.micronSymbol+"m");
-	        bw.write("</p><p>micrograph area: "+formatter.format(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))+IJ.micronSymbol+"m&sup2;");
+			bw.write("<p>Micrograph width: "+formatter.format(semInfo.getMicronLength(line.getWidth()))+IJ.micronSymbol+"m");
+	        bw.write("</p><p>Micrograph height: "+formatter.format(semInfo.getMicronLength(line.getHeight()))+IJ.micronSymbol+"m");
+	        bw.write("</p><p>Pixels per micron: "+formatter.format(semInfo.pixelLengthinMicrons()));
+	        bw.write("</p><p>Micrograph area: "+formatter.format(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))+IJ.micronSymbol+"m&sup2;");
 	            
 			bw.write("</p><div style=\"position:relative; height: 100%; width: 100%; top:0;left 0;\">");
 			bw.write("<img src=\"file:///"+origFname + ".jpg\" style='height: 100%'></div>");
@@ -171,8 +172,8 @@ public class CreateHtmlReport {
 			bw.write("<h2>Droplet Statistics</h2>");
 			bw.write("<p>Number of droplets = "+circles.getListofCircles().size()+"</p>");
             bw.write("<h3>Droplet Area Information</h3>");
-			bw.write("<table style='width:100%'><tr><th>Droplet Number</th><th>x</th><th>y</th><th>Area "+
-                     IJ.micronSymbol+"m&sup2;</th><th>Aggregate</th></tr>");
+			bw.write("<table style='width:100%'><tr><th>Droplet Number</th><th>x</th><th>y</th><th>Area ("+
+                     IJ.micronSymbol+"m&sup2;)</th><th>Diameter ("+IJ.micronSymbol+")</th></tr>");
             total = 0;
             int i = 0;
             Arrays.fill(areas, 0);
@@ -181,7 +182,8 @@ public class CreateHtmlReport {
 				    areas[i] = 3.14*semInfo.getMicronLength((double)ci.getRadius());
 				}
 			    bw.write("<tr><td>Droplet "+ci.getCircleNum()+"</td><td>"+ci.getX()+"</td><td>"+ci.getY()+"</td><td>"
-			              +formatter.format(areas[i])+"</td><td>"+ci.isAggregate()+"</th></tr>");
+			              +formatter.format(areas[i])+"</td><td>"+
+			              formatter.format(semInfo.getMicronLength((double)ci.getRadius()*2.0))+"</th></tr>");
 			    total += areas[i];
 			    
 			    ++i;
