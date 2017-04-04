@@ -61,9 +61,10 @@ public class Web_Hunter implements PlugIn {
 	public double startingX;
 	public double lineSep;
 	public double xInc;
-	public int circleDiameter;  //pixels
+	public int minCircleDiameter;  //microns
+	public int maxCircleDiameter;  //microns
 	
-	public double spindle;
+	public double spindle; // microns
 	
 	private boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Web Hunter Parameters");
@@ -75,6 +76,7 @@ public class Web_Hunter implements PlugIn {
 		gd.addNumericField("line separation", 5, 0);
 		gd.addNumericField("X increment", 10, 0);
 		gd.addNumericField("min circle diameter (microns)", 4, 0);
+		gd.addNumericField("min circle diameter (microns)", 7, 0);
 		gd.addNumericField("max spindle thickness (microns)", 0.8, 2);
 
 		gd.showDialog();
@@ -87,7 +89,8 @@ public class Web_Hunter implements PlugIn {
 		startingX = gd.getNextNumber();
 		lineSep = gd.getNextNumber();
 		xInc = gd.getNextNumber();
-		circleDiameter = (int)gd.getNextNumber();
+		minCircleDiameter = (int)gd.getNextNumber();
+		maxCircleDiameter = (int)gd.getNextNumber();
 		spindle = gd.getNextNumber();
 		
 		return true;
@@ -156,8 +159,8 @@ public class Web_Hunter implements PlugIn {
 				detectFeatures.setOrigImage(origImage);
 				detectFeatures.setHeight(height);
 				detectFeatures.process(image, semInfo, (int)threshold, (int)startingX,
-						(int)lineSep, (int)xInc,
-						circleDiameter, spindle, filename);
+						(int)lineSep, (int)xInc, minCircleDiameter,
+						maxCircleDiameter, spindle, filename);
 				
 				// Display results
 				//process(ip);

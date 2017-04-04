@@ -70,19 +70,19 @@ public class Detect_Features {
 	 * @param image the image (possible multi-dimensional)
 	 */
 	public void process(ImagePlus image, SemInfo semInfo, int threshold, int startingX, int lineSep,
-			             int xInc, int circleDiameter, double spindleSize, String fname) {
+			             int xInc, int minCircleDiameter, int maxCircleDiameter, double spindleSize, String fname) {
 		this.semInfo = semInfo;
 		this.image = image;
 		// slice numbers start with 1 for historical reasons
-		IJ.log("image.getStackSize() "+image.getStackSize()+" circleDiameter="+circleDiameter);
+		IJ.log("image.getStackSize() "+image.getStackSize()+" circleDiameter="+maxCircleDiameter);
 		for (int i = 1; i <= image.getStackSize(); i++)
 			process(image.getStack().getProcessor(i), threshold, startingX, lineSep, xInc, 
-					 circleDiameter, spindleSize, fname);
+					 minCircleDiameter, maxCircleDiameter, spindleSize, fname);
 	}
 
 	// Select processing method depending on image type
 	public void process(ImageProcessor ip, int threshold, int startingX, int lineSep, int xInc,
-			               int circleDiameterMicrons,  double spindleSize, String fname) {
+			 int minCircleDiameter, int maxCircleDiameter,  double spindleSize, String fname) {
 		int type = image.getType();
 		width = ip.getWidth();
 	//	height = ip.getHeight();
@@ -90,7 +90,7 @@ public class Detect_Features {
 		circles = new Circles(40);
 		if (type == ImagePlus.GRAY8){
 			byte[] pixels = process( (byte[]) ip.getPixels(), threshold, startingX, lineSep, xInc, 
-					circleDiameterMicrons, spindleSize, fname );
+					 minCircleDiameter, maxCircleDiameter, spindleSize, fname );
 			ip.setPixels(pixels);
 		}
 		else {
@@ -100,11 +100,12 @@ public class Detect_Features {
 
 	// processing of GRAY8 images
 	public byte[] process(byte[] pixels, int threshold, int startingX, int lineSep, int xInc, 
-			                 int circleDiameterMicrons,  double spindleSize, String fname) {
+			                 int minCircleDiameter, int maxCircleDiameter,  double spindleSize, String fname) {
 		
 		int state;  
 		int lineNum = 0;
-		int circleDiameter = 0;
+		int maxCircleDiamPixels = semInfo.numPixelsInOneMicron()*maxCircleDiameter;
+		int minCircleDiamPixels = semInfo.numPixelsInOneMicron()*minCircleDiameter;
 		
 		IJ.log("Start detect features");
 		// Use a state machine to detect the top edge and bottom edge
@@ -219,7 +220,6 @@ public class Detect_Features {
 						// determine thickness based on scale -TODO
 						int maxThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*spindleSize);
 						int minThickness =  (int)Math.round(semInfo.numPixelsInOneMicron()*0.2);
-						circleDiameter = (int)Math.round(semInfo.numPixelsInOneMicron()*circleDiameterMicrons);
 						//IJ.log("max "+maxThickness+" min "+minThickness);
 						if ((thickness >= minThickness) && (thickness <= maxThickness)) {
 							//IJ.log("***###$$$ line found at y="+topY+" x="+x+" thickness = "+thickness);
@@ -232,12 +232,12 @@ public class Detect_Features {
 							} else {
 								lines.addPointToClosestLine(lp, xInc);
 							}
-						} else if (thickness > circleDiameter) {
+						} else if (thickness >= minCircleDiamPixels) {
 							//IJ.log("*** possible CIRCLE "+" x="+x+" y="+topY+" thickness="+thickness);
 							LinePoint cp = new LinePoint(x, topY, thickness, false);
-							circles.addPointToCircleSet(cp, circleDiameter);
+							circles.addPointToCircleSet(cp, maxCircleDiamPixels);
 							cp = new LinePoint(x, bottomY, thickness, false);
-							circles.addPointToCircleSet(cp, circleDiameter);
+							circles.addPointToCircleSet(cp, maxCircleDiamPixels);
 						}
 						curRunBlack = 0;
 						state = LOOK_FOR_TOP_BG;
@@ -257,12 +257,17 @@ public class Detect_Features {
 			} else {
 				x += xInc;		
 			}
+			if (x > width) {
+				done = true;
+			}
+
 		} // while !done
+		IJ.showStatus("Calculate Linear Regressions");
 		lines.CalculateLinearReqressions();
 		
-		IJ.log("find circles less thatn ##### "+semInfo.numPixelsInOneMicron()*9);
 		// look for circles
-		this.circles.findCircles(lines, pixels, width, height, semInfo.numPixelsInOneMicron()*9);  //circleDiameter);
+		IJ.showStatus("Find Droplets");
+		this.circles.findCircles(lines, pixels, width, height, minCircleDiamPixels, maxCircleDiamPixels);
 		
 		pixels = this.drawCircles();
 		image.getProcessor().setPixels((Object)pixels);
@@ -272,7 +277,7 @@ public class Detect_Features {
 
 		this.createHtmlReport = new CreateHtmlReport(origImage.getFileInfo().fileName);
 		this.createHtmlReport.createWebHunterReport(origImage, this.lineImage, this.dropletImage,
-				  threshold, startingX, lineSep, xInc, circleDiameterMicrons,  spindleSize,
+				  threshold, startingX, lineSep, xInc, minCircleDiameter, maxCircleDiameter,  spindleSize,
 				  circles, lines, semInfo, this.calcLineArea());
 		
 		return (pixels);

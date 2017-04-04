@@ -39,7 +39,7 @@ public class CreateHtmlReport {
 	
 	public void createWebHunterReport(ImagePlus orig, ImagePlus line, ImagePlus droplet,
 			int threshold, int startingX, int lineSep, int xInc, 
-            int circleDiameterMicrons,  double spindleSize, Circles circles, Lines lines,
+			int minCircleDiameter, int maxCircleDiameter,  double spindleSize, Circles circles, Lines lines,
             SemInfo semInfo, double[] areas) {
 		
 		IJ.log(orig.toString());
@@ -106,7 +106,8 @@ public class CreateHtmlReport {
             bw.write("<tr><td>startingX</td><td>"+startingX+"</td></tr>");
             bw.write("<tr><td>lineSep</td><td>"+lineSep+"</td></tr>");
             bw.write("<tr><td>xInc</td><td>"+xInc+"</td></tr>");
-            bw.write("<tr><td>max droplet diameter</td><td>"+circleDiameterMicrons+"</td></tr>");
+            bw.write("<tr><td>max droplet diameter</td><td>"+minCircleDiameter+"</td></tr>");
+            bw.write("<tr><td>max droplet diameter</td><td>"+maxCircleDiameter+"</td></tr>");
             bw.write("<tr><td>max spindle thickness</td><td>"+spindleSize+"</td></tr>");
             bw.write("</table>");
         	NumberFormat formatter = new DecimalFormat("#0.000");  
@@ -114,7 +115,7 @@ public class CreateHtmlReport {
 			bw.write("<h2>Original Image</h2>");
 			bw.write("<p>Micrograph width: "+formatter.format(semInfo.getMicronLength(line.getWidth()))+IJ.micronSymbol+"m");
 	        bw.write("</p><p>Micrograph height: "+formatter.format(semInfo.getMicronLength(line.getHeight()))+IJ.micronSymbol+"m");
-	        bw.write("</p><p>Pixels per micron: "+formatter.format(semInfo.pixelLengthinMicrons()));
+	        bw.write("</p><p>Pixels per micron: "+formatter.format(semInfo.getMicronLength(1)));
 	        bw.write("</p><p>Micrograph area: "+formatter.format(semInfo.getMicronLength(line.getWidth())*semInfo.getMicronLength(line.getHeight()))+IJ.micronSymbol+"m&sup2;");
 	            
 			bw.write("</p><div style=\"position:relative; height: 100%; width: 100%; top:0;left 0;\">");
