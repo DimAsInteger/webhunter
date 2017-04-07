@@ -255,12 +255,11 @@ public class Circles {
 		return circleCount;
 	}
 	
-	public void createHistogram(double[] values, double min, double max, String name) {
+	public void createHistogram(double[] values, double min, double max, String name,
+			String plotTitle, String xaxis) {
 		HistogramDataset dataset = new HistogramDataset();
 		dataset.setType(HistogramType.FREQUENCY);
        	dataset.addSeries("Histogram",values,values.length);
-       	String plotTitle = "Droplet Area Histogram"; 
-       	String xaxis = "Droplet Area (microns squared)";
        	String yaxis = "Count"; 
        	PlotOrientation orientation = PlotOrientation.VERTICAL; 
        	boolean show = false; 

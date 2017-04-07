@@ -87,6 +87,10 @@ public class CreateHtmlReport {
 		fileSaverDroplet.saveAsJpeg(dropFname+".jpg");
 		String histoFname = tiffDir.getPath()+File.separator+strDate+"histo_"+fileName;
 		fileSaverDroplet.saveAsJpeg(histoFname+".jpg");
+		String histoDiamFname = tiffDir.getPath()+File.separator+strDate+"histodiam_"+fileName;
+		fileSaverDroplet.saveAsJpeg(histoDiamFname+".jpg");
+		String histoDistFname = tiffDir.getPath()+File.separator+strDate+"histodist_"+fileName;
+		fileSaverDroplet.saveAsJpeg(histoDistFname+".jpg");
 		
 		// Create HTML report
 		try {
@@ -177,11 +181,18 @@ public class CreateHtmlReport {
                      IJ.micronSymbol+"m&sup2;)</th><th>Diameter ("+IJ.micronSymbol+")</th></tr>");
             total = 0;
             int i = 0;
+            double[] histodiamdata = new double[circles.getListofCircles().size()];
+            double[] histodistdata = new double[circles.getListofCircles().size()];
             Arrays.fill(areas, 0);
+			int middleX = (int)Math.round((double)line.getWidth()/2.0);
+			int middleY = (int)Math.round((double)line.getHeight()/2.0);
 			for (CircleInfo ci : circles.getListofCircles()) {
+				double dist = Math.sqrt(Math.pow((middleX-ci.getX()),2)+Math.pow(middleY-ci.getY(),2));
+				histodistdata[i] = semInfo.getMicronLength((double)dist);
 				if (ci.getRadius() > 0) {
 				    areas[i] = 3.14*semInfo.getMicronLength((double)ci.getRadius());
-				}
+				    histodiamdata[i] = semInfo.getMicronLength((double)ci.getRadius()*2.0);
+				}				
 			    bw.write("<tr><td>Droplet "+ci.getCircleNum()+"</td><td>"+ci.getX()+"</td><td>"+ci.getY()+"</td><td>"
 			              +formatter.format(areas[i])+"</td><td>"+
 			              formatter.format(semInfo.getMicronLength((double)ci.getRadius()*2.0))+"</th></tr>");
@@ -206,15 +217,40 @@ public class CreateHtmlReport {
             for (int index=0; index<i; index++) {
             	histodata[index] = areas[index];
             }
-            circles.createHistogram(histodata,stats[0],stats[1],histoFname);
+          	String plotTitle = "Droplet Area Histogram"; 
+           	String xaxis = "Droplet Area (microns squared)";
+            circles.createHistogram(histodata,stats[0],stats[1],histoFname, plotTitle, xaxis);
 			bw.write("<img src=\"file:///"+histoFname + "\" style='height: 100%'></div>");
 
+			stats = StatsFunctions.calcStatistics(histodiamdata);
+	        bw.write("<h3>Diameter statistics</h3>");
+			stats = StatsFunctions.calcStatistics(areas);
+			bw.write("<table style='width:100%'>");
+            bw.write("<tr><td>Minimum</td><td>"+formatter.format(stats[0])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Maximum</td><td>"+formatter.format(stats[1])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Mean</td><td>"+formatter.format(stats[2])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Standard Deviation</td><td>"+formatter.format(semInfo.getMicronLength(stats[3]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("</table>");
+
+			plotTitle = "Droplet Diameter Histogram"; 
+           	xaxis = "Droplet Diameter (microns)";
+	        circles.createHistogram(histodiamdata,stats[0],stats[1],histoDiamFname, plotTitle, xaxis);
+			bw.write("<img src=\"file:///"+histoDiamFname + "\" style='height: 100%'></div>");
+
+	        bw.write("<h3>Distance from middle statistics</h3>");
+			stats = StatsFunctions.calcStatistics(histodistdata);
+			bw.write("<table style='width:100%'>");
+            bw.write("<tr><td>Minimum</td><td>"+formatter.format(stats[0])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Maximum</td><td>"+formatter.format(stats[1])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Mean</td><td>"+formatter.format(stats[2])+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("<tr><td>Standard Deviation</td><td>"+formatter.format(semInfo.getMicronLength(stats[3]))+" "+IJ.micronSymbol+"m"+"</td></tr>");
+            bw.write("</table>");
+
+			plotTitle = "Droplet Distribution Histogram"; 
+           	xaxis = "Distance from middle (microns)";
+	        circles.createHistogram(histodiamdata,stats[0],stats[1],histoDistFname, plotTitle, xaxis);
+			bw.write("<img src=\"file:///"+histoDistFname + "\" style='height: 100%'></div>");
 			
-			// Chris add distance from middle point of image
-			for (CircleInfo ci : circles.getListofCircles()) {
-			    // Fill this in 
-				// distance ci.getX(); to each ci.getY()
-			}
 			bw.write("</body>");
 
 			bw.write("</html>");
