@@ -267,7 +267,11 @@ public class Detect_Features {
 		
 		// look for circles
 		IJ.showStatus("Find Droplets");
-		this.circles.findCircles(lines, pixels, width, height, minCircleDiamPixels, maxCircleDiamPixels);
+		for (int diam=minCircleDiameter; diam<maxCircleDiameter; diam++) {
+			int diamPixels = semInfo.numPixelsInOneMicron()*diam;
+			this.circles.findCircles(lines, pixels, width, height, minCircleDiamPixels, diamPixels);		
+		}
+		this.circles.CircleRegression(minCircleDiamPixels, maxCircleDiamPixels, width, height);
 		
 		pixels = this.drawCircles();
 		image.getProcessor().setPixels((Object)pixels);
@@ -316,6 +320,7 @@ public class Detect_Features {
 	private byte[] drawCircles() {
 		Overlay overlay = new Overlay();
 		for (CircleInfo ci : circles.getListofCircles()) {
+			try {
 			OvalRoi ovalRoi = new OvalRoi(ci.getX(), ci.getY(), ci.getRadius()*2, ci.getRadius()*2);
 			ovalRoi.setStrokeColor(Color.white); 
 			ovalRoi.setStrokeWidth(4.0);
@@ -331,7 +336,9 @@ public class Detect_Features {
 			
 			image.setOverlay(overlay);
 			overlay.add(roi);
-			
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	
 		}
 		this.dropletImage = image.flatten();

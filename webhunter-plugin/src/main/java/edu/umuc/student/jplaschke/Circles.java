@@ -63,16 +63,22 @@ public class Circles {
 	}
 	
 	
-	private void performCircleRegression(int minDiam, int maxDiam) {
+	private void performCircleRegression(int minDiam, int maxDiam, int width, int height) {
 	   // IJ.log("num circles "+allCirclePoints.size()+" max diam ="+maxDiam);
 	    int i = 1;
+	    int n = 1;
 	 	for (ArrayList<LinePoint> possibleCircle : allCirclePoints) {
-	 		if ((possibleCircle != null) && (possibleCircle.size() > 5) && (possibleCircle.size() < 800))  {
+	 		if ((possibleCircle != null) && (possibleCircle.size() > 6))  {
+	 			n = 1;
 		 		IJ.log("Circle "+i+" num points "+possibleCircle.size());
 		 		ArrayList list = new ArrayList();
 			    for (LinePoint point : possibleCircle) {
 		            //IJ.log("point x="+point.x+" y="+point.y);
 		            list.add(new Point2D.Double(point.x,-point.y));
+		            ++n;
+		            if (n > 800) {
+		            	break;
+		            }
 				}
 			    Point2D.Double[] points =
 			    	     (Point2D.Double[]) list.toArray(new Point2D.Double[list.size()]);
@@ -86,29 +92,31 @@ public class Circles {
 	    	   try {
 	    		   fitter.initialize(points);
 	    		   // minimize the residuals
-	    		   int iter = fitter.minimize(100, 0.1, 1.0e-12);
+	    		   int iter = fitter.minimize(100, 0.01, 1.0e-14);
 	    		   if (iter > 0) {
 		    		   IJ.log("converged circle: x="
 	 	                      + format.format(fitter.getCenter().x)
-	 	                      + " x="     + format.format(fitter.getCenter().y)
+	 	                      + " y="     + format.format(fitter.getCenter().y)
 	 	                      + " r="     + format.format(fitter.getRadius()));
-		    		   int x = (int)Math.round(fitter.getCenter().x)+minDiam;
-		    		   int y = (int)Math.round(fitter.getCenter().y)+minDiam;
+		    		   int x = (int)Math.round(fitter.getCenter().x);
+		    		   int y = (int)Math.round(fitter.getCenter().y);
 		    		   int r = (int)Math.round(fitter.getRadius());
 		    		   
 		    		  // if ((r >= Math.round((double)minDiam)) && (r <= Math.round((double)maxDiam))) {
-		    	  	   if ((r <= Math.round((double)maxDiam))) {
+		    	  	   if ((r <= Math.round((double)maxDiam)) &&
+		    	  			   ((x>0) && (x<width)) &&
+		    	  			   ((y>0) && (y<height))) {
 		    	  			   
 		    			   CircleInfo ci = new CircleInfo(x, y, r, false);
 		    			   ci.setCircleNum(ListofCircles.size()+1);
 		    			   ListofCircles.add(ci);
 		    		   } else {
-		    			   IJ.log("not added "+r+" max "+maxDiam+" min "+minDiam);
+		    			   IJ.log("not added "+r+" max "+maxDiam+" min "+minDiam+" x "+x+" y "+y);
 		    		   }
 	    		   }
 	    	   } catch (LocalException e) {
 	    		   // TODO Auto-generated catch block
-	    		   //e.printStackTrace();
+	    		   e.printStackTrace();
 	    	   }
 	    	   
 	 		}
@@ -147,11 +155,13 @@ public class Circles {
 		    		//(pixels[x + y * width]&0xFF)
 		    		// Look for Diam pixels above the line
 		    	
-		    		searchCirclesHorizontalDir(lines, pixels, Yintercept-li.getThickness(), Yintercept-maxCircleDiameter, width, 
+		    		searchCirclesHorizontalDir(lines, pixels, Yintercept-li.getThickness(), 
+		    				Yintercept-maxCircleDiameter, width, height,
 		    				li.slope, maxCircleDiameter);
 		    		
 		    		//Look for halfDiam pixels below the line
-		    		searchCirclesHorizontalDir(lines, pixels, Yintercept+maxCircleDiameter, Yintercept+li.getThickness(), width, 
+		    		searchCirclesHorizontalDir(lines, pixels, Yintercept+maxCircleDiameter, 
+		    				          Yintercept+li.getThickness(), width, height,
 		    				                     li.slope, maxCircleDiameter);
 		    		
 		    	} catch (Exception e) {
@@ -161,36 +171,46 @@ public class Circles {
 			    
 			}
 		}
-		//this.printPossibleCircles();
-		//IJ.log("circle diameter = "+circleDiameter);
-		this.performCircleRegression(minCircleDiameter, maxCircleDiameter);
+	
  	}
 	
+	public void CircleRegression(int minCircleDiameter, int maxCircleDiameter, int width, int height) {
+		//this.printPossibleCircles();
+		//IJ.log("circle diameter = "+circleDiameter);
+		this.performCircleRegression(minCircleDiameter, maxCircleDiameter, width, height);
+	}
+	
 	private boolean checkRight(int start, double slope, double i,
-			                        byte[] pixels, int width, int val, int n) {
+			                        byte[] pixels, int width, int height, int val, int n) {
 		
 		boolean test = true;
 		for (int x=start; x<n; x++) {
 		    int y = (int) (Math.round((double)x*slope) + Math.round(i));
     	    y = -y;
-    	    if (((pixels[x + y * width])&0xFF) != (int)val) {
-    	    	test = false;
+    	    if ((y>0) && (y<height)) {
+    	    	if (((pixels[x + y * width])&0xFF) != (int)val) {
+    	    		test = false;
+    	    	}
     	    }
 		}
 		return test;
 	}
 	
-	private void searchCirclesHorizontalDir(Lines lines, byte[] pixels, int top, int bottom, int width, 
+	private void searchCirclesHorizontalDir(Lines lines, byte[] pixels, int top, int bottom, int width, int height, 
 			                     double slope, int circleDiameter) {
 		int state = SEARCH_BG;
-		IJ.log("top "+top+" bottom "+bottom);
 	    LinePoint leftEdgeX = null;
-		LinePoint rightEdge;
-		for (int i=top; i>=bottom; i--) {
+		int i = 0, x = 0;
+		try {
+
+		for (i=top; i>=bottom; i-=4) {
 			state = SEARCH_BG;
-			for (int x=0; x<width; x++) {
+			for (x=0; x<width; x++) {
+
 				int y = (int) (Math.round((double)x*slope) + Math.round(i));
-		        if (!this.isInLinesSet(lines, slope, i)) { 
+				y = -y;
+
+		        if ((y>0) && (y<height) && (!this.isInLinesSet(lines, slope, i))) { 
 		        	if (state == SEARCH_BG) {
 		    			if (((pixels[x + y * width])&0xFF) == (int)80) {
 		    				state = SEARCH_LEFT_EDGE;
@@ -198,7 +218,7 @@ public class Circles {
 		        	} else if (state == SEARCH_LEFT_EDGE) {
 						if (((pixels[x + y * width])&0xFF) == (int)10) {
 							if (checkRight(x, slope, i,
-			                        pixels, width, 10, 10)) {
+			                        pixels, width, height, 10, 15)) {
 								state = SEARCH_RIGHT_EDGE;
 								leftEdgeX = new LinePoint(x, y, -1, false);
 								//addPointToCircleSet(cp, circleDiameter);
@@ -207,15 +227,17 @@ public class Circles {
 					} else {
 						if (((pixels[x + y * width])&0xFF) == (int)80) {
 							if (checkRight(x, slope, i,
-			                        pixels, width, 80, 10)) {
+			                        pixels, width, height, 80, 15)) {
 								state = SEARCH_BG;
 								double dist = Math.sqrt(Math.pow((leftEdgeX.x-x),2)+Math.pow(leftEdgeX.y-y,2));
-IJ.log("x = "+x+" y= "+y+" dist = "+dist+ " circleDiameter*4 "+circleDiameter*4);
-                                 {//if (dist < circleDiameter*20) {
-IJ.log("add left edge "+leftEdgeX.x+" y "+leftEdgeX.y);									
+								if ((dist <= circleDiameter)) {
 									addPointToCircleSet(leftEdgeX, circleDiameter);
 									LinePoint cp = new LinePoint(x, y, -1, false);
 									addPointToCircleSet(cp, circleDiameter);
+									//ArrayList<LinePoint> cirNumToAddTo = new ArrayList<LinePoint>(1);
+							    	//cirNumToAddTo.add(cp);
+							    	//allCirclePoints.ensureCapacity(allCirclePoints.size()+1);
+							    	//allCirclePoints.add(cirNumToAddTo);
 								}
 							}
 						}
@@ -224,7 +246,9 @@ IJ.log("add left edge "+leftEdgeX.x+" y "+leftEdgeX.y);
 			}
 			
 		}
-		IJ.showStatus("leave search");
+		} catch (Exception e) {
+			IJ.log("EXception x = "+x+" y "+i);
+		}
 	}
 	
 	public int getCircleCount() {
@@ -288,6 +312,7 @@ IJ.log("add left edge "+leftEdgeX.x+" y "+leftEdgeX.y);
         
 	    if (cirNumToAddTo != null) { 
 	    	cirNumToAddTo.add(cp);
+
 	    } else {
 	    	cirNumToAddTo = new ArrayList<LinePoint>(1);
 	    	cirNumToAddTo.add(cp);

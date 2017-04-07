@@ -137,11 +137,9 @@ public class Read_Scale {
 						currentX = x;
 					}
 					++curRunWhite;
-					IJ.showStatus("curRunWhite = "+curRunWhite);
 				} else {
 					if (curRunWhite > longestRunWhite) {
 						longestRunWhite = curRunWhite;
-						IJ.showStatus("longestRunWhite = "+longestRunWhite);
 						upperX = currentX;
 						upperY = y;
 					} else if (curRunWhite == longestRunWhite) {
